@@ -9,21 +9,12 @@
 
 ## Constraints
 
-* Use Scheme
+* Use Scheme somewhere in the project
 * Use a lot of libraries
 
 ## Dependencies
 
-### 1. Scheme with Chicken
+### Go
 
-* Ubuntu : `sudo apt-get install libchicken6 chicken-bin`
-* OS X : `brew install chicken`
-
-Test it by starting an interpreter:
-
-    csi
-
-
-### 2. Scheme Libraries
-
-    chicken-install http-client
+* [Ubuntu](https://github.com/golang/go/wiki/Ubuntu): `sudo apt-get install golang`
+* OS X : `brew install go`
