@@ -21,6 +21,12 @@ func (cl *Client) Authenticated() bool {
 
 // Get some info about the API.
 func (cl *Client) ApiInfo() (ApiInfo, error) {
+	_, err := cl.http.Call(GET, CALL_API_INFO, NoParams)
+
+	if err != nil {
+		return ApiInfo{}, err
+	}
+
 	// TODO
 	return ApiInfo{}, ErrNotImplemented
 }
@@ -30,7 +36,12 @@ func (cl *Client) RegisterWithCredentials(username, password string) error {
 	cl.username = username
 	cl.password = password
 
-	return ErrNotImplemented
+	_, err := cl.http.Call(GET, CALL_REGISTER, UserCredentialsParams{
+		user:     cl.username,
+		password: cl.password,
+	})
+
+	return err
 }
 
 // Authenticate the client with the given credentials.
@@ -55,7 +66,13 @@ func (cl *Client) LoginWithCredentials(username, password string) error {
 
 // Anthenticate the client with its own credentials.
 func (cl *Client) Login() error {
-	return ErrNotImplemented
+	_, err := cl.http.Call(POST, CALL_AUTH, UserCredentialsParams{
+		user:     cl.username,
+		password: cl.password,
+	})
+
+	cl.authenticated = (err == nil)
+	return err
 }
 
 // Logout the client.
@@ -73,7 +90,13 @@ func (cl *Client) Logout() error {
 }
 
 // Create a new game.
-func (cl *Client) CreateGame(g *GameSpec) (Game, error) {
+func (cl *Client) CreateGame(gs *GameSpec) (Game, error) {
+	_, err := cl.http.Call(POST, CALL_CREATE, gs.toParams())
+
+	if err != nil {
+		return Game{}, err
+	}
+
 	// TODO
 	return Game{}, ErrNotImplemented
 }
@@ -86,7 +109,7 @@ func (cl *Client) DestroyGame(g *Game) error {
 		return err
 	}
 	g.Identifier = ""
-	return ErrNotImplemented
+	return nil
 }
 
 // Destroy a game given its identifier.
@@ -97,16 +120,12 @@ func (cl *Client) DestroyGameIndentifier(id GameId) error {
 
 // List all visible games.
 func (cl *Client) ListGames() ([]Game, error) {
-	res, err := cl.http.Call(GET, CALL_GAMES, NoParams)
+	_, err := cl.http.Call(GET, CALL_GAMES, NoParams)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO
-
-	// trick go to avoid "'res' variable not used" error
-	if res == "" {
-	}
 
 	return nil, ErrNotImplemented
 }

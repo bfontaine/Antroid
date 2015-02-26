@@ -1,5 +1,9 @@
 package api
 
+import (
+	"strings"
+)
+
 type GameSpec struct {
 	Public        bool
 	Players       []string
@@ -11,6 +15,27 @@ type GameSpec struct {
 	MinPlayers    int
 	InitialEnergy int
 	InitialAcid   int
+}
+
+func (gs *GameSpec) toParams() GameSpecParams {
+	gsp := GameSpecParams{
+		teaser:            gs.Description,
+		pace:              gs.Pace,
+		nb_turn:           gs.Turns,
+		nb_ant_per_player: gs.AntsPerPlayer,
+		nb_player:         gs.MaxPlayers,
+		minimal_nb_player: gs.MinPlayers,
+		initial_energy:    gs.InitialEnergy,
+		initial_acid:      gs.InitialAcid,
+	}
+
+	if gs.Public {
+		gsp.users = "+"
+	} else {
+		gsp.users = strings.Join(gs.Players, ",")
+	}
+
+	return gsp
 }
 
 // constants for the v0 API
