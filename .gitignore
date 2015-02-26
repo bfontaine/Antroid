@@ -3,6 +3,8 @@
 .*.sw*
 .DS_Store
 
+/antroid
+
 # from https://github.com/github/gitignore/blob/master/Go.gitignore
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
