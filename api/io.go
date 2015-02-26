@@ -78,17 +78,20 @@ func NewHTTClient() httclient {
 }
 
 // Return an absolute URL for a given call.
-func (h *httclient) MakeApiUrl(call apiCall) string {
+func (h *httclient) makeApiUrl(call apiCall) string {
 	return fmt.Sprintf("%s/%s%s", h.baseUrl, h.apiVersion, string(call))
 }
 
 // used when an API call doesn't need any parameter
 var NoParams = struct{}{}
 
+// game id param
+type GameIdParams struct{ id GameId }
+
 // Low-level call
 func (h *httclient) Call(method httpVerb, call apiCall, body interface{}) (string, error) {
 	res, err := goreq.Request{
-		Uri:       h.MakeApiUrl(call),
+		Uri:       h.makeApiUrl(call),
 		Method:    string(method),
 		Accept:    "application/json",
 		UserAgent: h.userAgent,
@@ -106,5 +109,6 @@ func (h *httclient) Call(method httpVerb, call apiCall, body interface{}) (strin
 
 	defer res.Body.Close()
 
+	// TODO extract the error code if there's one
 	return res.Body.ToString()
 }

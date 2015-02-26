@@ -143,7 +143,13 @@ func (cl *Client) ShutdownGame(g *Game) error {
 
 // Shutdown a game given its identifier (need to be root)
 func (cl *Client) ShutdownGameIdentifier(id GameId) error {
-	return ErrNotImplemented
+	if !cl.authenticated {
+		return ErrNoPerm
+	}
+
+	_, err := cl.http.Call(GET, CALL_SHUTDOWN, GameIdParams{id: id})
+
+	return err
 }
 
 // Get a game's status
@@ -158,7 +164,7 @@ func (cl *Client) GetGameIdentifierStatus(id GameId) error {
 	return ErrNotImplemented
 }
 
-// Check the client's status server-side
-func (cl *Client) WhoAmI() error {
-	return ErrNotImplemented
+// Check the client's status on the server-side
+func (cl *Client) WhoAmI() (string, error) {
+	return "", ErrNotImplemented
 }
