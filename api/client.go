@@ -4,10 +4,14 @@ type Client struct {
 	username      string
 	password      string
 	authenticated bool
+	http          httclient
 }
 
+// Create a new API client.
 func NewClient() (Client, error) {
-	return Client{}, nil
+	return Client{
+		http: NewHTTClient(),
+	}, nil
 }
 
 // Test if the client is authenticated.
@@ -62,8 +66,10 @@ func (cl *Client) Logout() error {
 		return nil
 	}
 
-	// TODO
-	return ErrNotImplemented
+	// not tested
+	_, err := cl.http.Call(POST, CALL_LOGOUT, NoParams)
+
+	return err
 }
 
 // Create a new game.
@@ -91,6 +97,17 @@ func (cl *Client) DestroyGameIndentifier(id GameId) error {
 
 // List all visible games.
 func (cl *Client) ListGames() ([]Game, error) {
+	res, err := cl.http.Call(GET, CALL_GAMES, NoParams)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO
+
+	// trick go to avoid "'res' variable not used" error
+	if res == "" {
+	}
+
 	return nil, ErrNotImplemented
 }
 

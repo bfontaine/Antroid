@@ -18,3 +18,8 @@
 
 * [Ubuntu](https://github.com/golang/go/wiki/Ubuntu): `sudo apt-get install golang`
 * OS X : `brew install go`
+
+### Go Libraries
+
+    # GoReq, a lightweight HTTP requests libraries
+    go get github.com/franela/goreq

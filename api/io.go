@@ -2,6 +2,9 @@ package api
 
 import (
 	"errors"
+	"fmt"
+	"github.com/franela/goreq"
+	"net/http/cookiejar"
 )
 
 /*
@@ -33,3 +36,75 @@ var (
 	/* The User-Agent header we use in all requests */
 	USER_AGENT = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
 )
+
+type apiCall string
+
+var (
+	CALL_API_INFO = apiCall("/api")
+	CALL_AUTH     = apiCall("/auth")
+	CALL_CREATE   = apiCall("/create")
+	CALL_DESTROY  = apiCall("/destroy")
+	CALL_GAMES    = apiCall("/games")
+	CALL_JOIN     = apiCall("/join")
+	CALL_LOG      = apiCall("/log")
+	CALL_LOGOUT   = apiCall("/logout")
+	CALL_PLAY     = apiCall("/play")
+	CALL_REGISTER = apiCall("/register")
+	CALL_SHUTDOWN = apiCall("/shutdown")
+	CALL_STATUS   = apiCall("/status")
+	CALL_WHOAMI   = apiCall("/whoami")
+)
+
+type httpVerb string
+
+var (
+	GET  = httpVerb("GET")
+	POST = httpVerb("POST")
+)
+
+type httclient struct {
+	baseUrl    string
+	apiVersion string
+	userAgent  string
+	cookies    cookiejar.Jar
+}
+
+func NewHTTClient() httclient {
+	return httclient{
+		baseUrl:    BASE_URL,
+		apiVersion: API_VERSION,
+		userAgent:  USER_AGENT,
+	}
+}
+
+// Return an absolute URL for a given call.
+func (h *httclient) MakeApiUrl(call apiCall) string {
+	return fmt.Sprintf("%s/%s%s", h.baseUrl, h.apiVersion, string(call))
+}
+
+// used when an API call doesn't need any parameter
+var NoParams = struct{}{}
+
+// Low-level call
+func (h *httclient) Call(method httpVerb, call apiCall, body interface{}) (string, error) {
+	res, err := goreq.Request{
+		Uri:       h.MakeApiUrl(call),
+		Method:    string(method),
+		Accept:    "application/json",
+		UserAgent: h.userAgent,
+		Body:      body,
+		// unfortunately the server uses a broken certificate right now
+		Insecure: true,
+	}.Do()
+	// TODO add cookies
+
+	if err != nil {
+		return "", err
+	}
+
+	// TODO set cookies http://golang.org/pkg/net/http/cookiejar/
+
+	defer res.Body.Close()
+
+	return res.Body.ToString()
+}
