@@ -7,11 +7,39 @@ type Client struct {
 	http          httclient
 }
 
+// See the API spec
+var errorCodes = map[int]error{
+	61760457:   ErrWrongCmd,
+	91411898:   ErrNoMoreSlot,
+	351345662:  ErrNoPerm,
+	427619750:  ErrWrongGame,
+	448649162:  ErrGameNotPlaying,
+	565287715:  ErrAlreadyJoined,
+	591603053:  ErrInvalidArgument,
+	693680202:  ErrUnknownUser,
+	813909381:  ErrMustJoin,
+	873213279:  ErrUserAlreadyExists,
+	942350302:  ErrWrongAnt,
+	965395831:  ErrGameNotOver,
+	1058501022: ErrNotLogged,
+}
+
 // Create a new API client.
 func NewClient() (Client, error) {
 	return Client{
 		http: NewHTTClient(),
 	}, nil
+}
+
+func (cl *Client) getUserCredentialsParams() UserCredentialsParams {
+	return UserCredentialsParams{
+		Login:    cl.username,
+		Password: cl.password,
+	}
+}
+
+func (cl *Client) errorForCode(code int) error {
+	return errorCodes[code]
 }
 
 // Test if the client is authenticated.
@@ -36,12 +64,22 @@ func (cl *Client) RegisterWithCredentials(username, password string) error {
 	cl.username = username
 	cl.password = password
 
-	_, err := cl.http.CallRegister(UserCredentialsParams{
-		user:     cl.username,
-		password: cl.password,
-	})
+	body, err := cl.http.CallRegister(cl.getUserCredentialsParams())
 
-	return err
+	if err != nil {
+		return nil
+	}
+
+	var resp registerResponse
+	body.FromJsonTo(&resp)
+
+	body.Close()
+
+	if resp.Status == "error" {
+		return cl.errorForCode(resp.Response.Error_code)
+	}
+
+	return nil
 }
 
 // Authenticate the client with the given credentials.
@@ -66,12 +104,15 @@ func (cl *Client) LoginWithCredentials(username, password string) error {
 
 // Anthenticate the client with its own credentials.
 func (cl *Client) Login() error {
-	_, err := cl.http.CallAuth(UserCredentialsParams{
-		user:     cl.username,
-		password: cl.password,
-	})
+	body, err := cl.http.CallAuth(cl.getUserCredentialsParams())
 
 	cl.authenticated = (err == nil)
+
+	// TODO check the body
+	if body != nil {
+		body.Close()
+	}
+
 	return err
 }
 
@@ -161,7 +202,7 @@ func (cl *Client) ShutdownIdentifier(id string) error {
 		return ErrNoPerm
 	}
 
-	_, err := cl.http.CallShutdown(GenericIdParams{id: id})
+	_, err := cl.http.CallShutdown(GenericIdParams{Id: id})
 
 	return err
 }
@@ -178,7 +219,33 @@ func (cl *Client) GetGameIdentifierStatus(id GameId) error {
 	return ErrNotImplemented
 }
 
+// number of characters we need to skip in /whoami's response to get our
+// username.
+var whoAmILoginSlice = len("logged as ")
+
 // Check the client's status on the server-side and return it.
 func (cl *Client) WhoAmI() (string, error) {
-	return "", ErrNotImplemented
+	body, err := cl.http.CallWhoAmI()
+
+	if err != nil {
+		return "", err
+	}
+
+	if body == nil {
+		return "", ErrEmptyBody
+	}
+
+	defer body.Close()
+
+	var resp whoAmIResponse
+
+	body.FromJsonTo(&resp)
+
+	cl.authenticated = (resp.Response.Status != "not_logged")
+
+	if !cl.authenticated {
+		return "", ErrNotLogged
+	}
+
+	return resp.Response.Status[whoAmILoginSlice:], nil
 }

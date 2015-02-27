@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/franela/goreq"
-	"net/http/cookiejar"
+	"github.com/google/go-querystring/query"
+	"strings"
 )
 
 /*
@@ -13,6 +14,7 @@ See the spec: http://yann.regis-gianas.org/antroid/html/api?version=0
 */
 var (
 	ErrUnknownUser       = errors.New("Unknown user")
+	ErrInvalidArgument   = errors.New("Invalid argument")
 	ErrGameAlreadyExists = errors.New("Game identifier already exists")
 	ErrUserAlreadyExists = errors.New("User already exists")
 	ErrWrongGame         = errors.New("Invalid game identifier")
@@ -25,7 +27,12 @@ var (
 	ErrNotLogged         = errors.New("Must be logged")
 	ErrWrongCmd          = errors.New("Invalid command")
 	ErrGameNotPlaying    = errors.New("The game is not playing")
-	ErrNotImplemented    = errors.New("Not implemented")
+
+	ErrEmptyBody      = errors.New("Unexpected empty response body")
+	ErrNotImplemented = errors.New("Not implemented")
+
+	Err4XX = errors.New("Client error")
+	Err5XX = errors.New("Server error")
 )
 
 /* The base URL of all API calls */
@@ -37,23 +44,26 @@ var API_VERSION = "0"
 /* The User-Agent header we use in all requests */
 var USER_AGENT = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
 
-// An HTTP client with a cookiejar
+// An HTTP client for the API server
 type httclient struct {
 	UserAgent string
 
 	baseUrl    string
 	apiVersion string
-	cookies    cookiejar.Jar
+
+	// we use a dead simple implementation here, just storing the cookie as
+	// returned by the server and sending it back. We don't check the path nor
+	// the protocol nor the expiration date.
+	authCookie string
 }
 
 // Create a new HTTP client.
 func NewHTTClient() httclient {
-	// TODO setup cookiejar
-
 	return httclient{
+		UserAgent:  USER_AGENT,
 		baseUrl:    BASE_URL,
 		apiVersion: API_VERSION,
-		UserAgent:  USER_AGENT,
+		authCookie: "",
 	}
 }
 
@@ -62,8 +72,31 @@ func (h *httclient) makeApiUrl(call string) string {
 	return fmt.Sprintf("%s/%s%s", h.baseUrl, h.apiVersion, string(call))
 }
 
-// Make an HTTP call to the remote server and return its response.
-func (h *httclient) call(method, call string, data interface{}) (string, error) {
+func (h *httclient) setCookieFromHeader(header string) {
+	parts := strings.SplitN(header, ";", 2)
+	if len(parts) == 0 {
+		return
+	}
+
+	h.authCookie = parts[0]
+}
+
+// Return the appropriate error for a given HTTP code
+func (h *httclient) getError(code int) error {
+	switch code / 100 {
+	case 4:
+		return Err4XX
+	case 5:
+		return Err5XX
+	}
+
+	return nil
+}
+
+// Make an HTTP call to the remote server and return its response body.
+// Don't forget to close it if it's not nil.
+func (h *httclient) call(method, call string, data interface{}) (*goreq.Body, error) {
+
 	req := goreq.Request{
 		Uri:       h.makeApiUrl(call),
 		Method:    string(method),
@@ -71,28 +104,44 @@ func (h *httclient) call(method, call string, data interface{}) (string, error) 
 		UserAgent: h.UserAgent,
 		// the server uses a self-signed certificate
 		Insecure: true,
+		//ShowDebug: true,
 	}
 
 	if method == "GET" {
+		// goreq will encode everything for us
 		req.QueryString = data
 	} else {
-		req.Body = data
+
+		// we need to encode our values because the server doesn't accept JSON in
+		// requests.
+		values, err := query.Values(data)
+
+		if err != nil {
+			return nil, err
+		}
+
+		queryString := values.Encode()
+		req.ContentType = "application/x-www-form-urlencoded"
+		req.Body = queryString
 	}
 
-	// TODO add cookies
+	req.AddHeader("Cookie", h.authCookie)
 
 	res, err := req.Do()
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	// TODO set cookies http://golang.org/pkg/net/http/cookiejar/
+	if res.StatusCode != 200 {
+		return res.Body, h.getError(res.StatusCode)
+	}
 
-	defer res.Body.Close()
+	if cookieHeader := res.Header.Get("Set-Cookie"); cookieHeader != "" {
+		h.setCookieFromHeader(cookieHeader)
+	}
 
-	// TODO extract the error code if there's one
-	return res.Body.ToString()
+	return res.Body, nil
 }
 
 var (
@@ -107,66 +156,66 @@ var (
 */
 
 // Perform a call to /api.
-func (h *httclient) CallApi() (string, error) {
+func (h *httclient) CallApi() (*goreq.Body, error) {
 	return h.call(get, "/api", NoParams{})
 }
 
 // Perform a call to /auth.
-func (h *httclient) CallAuth(params UserCredentialsParams) (string, error) {
+func (h *httclient) CallAuth(params UserCredentialsParams) (*goreq.Body, error) {
 	return h.call(post, "/auth", params)
 }
 
 // Perform a call to /create.
-func (h *httclient) CallCreate(params GameSpecParams) (string, error) {
+func (h *httclient) CallCreate(params GameSpecParams) (*goreq.Body, error) {
 	return h.call(get, "/create", params)
 }
 
 // Perform a call to /destroy.
-func (h *httclient) CallDestroy(params GameIdParams) (string, error) {
+func (h *httclient) CallDestroy(params GameIdParams) (*goreq.Body, error) {
 	return h.call(get, "/destroy", params)
 }
 
 // Perform a call to /games.
-func (h *httclient) CallGames() (string, error) {
+func (h *httclient) CallGames() (*goreq.Body, error) {
 	return h.call(get, "/games", NoParams{})
 }
 
 // Perform a call to /join.
-func (h *httclient) CallJoin(params GameIdParams) (string, error) {
+func (h *httclient) CallJoin(params GameIdParams) (*goreq.Body, error) {
 	return h.call(get, "/join", params)
 }
 
 // Perform a call to /log.
-func (h *httclient) CallLog(params GameIdParams) (string, error) {
+func (h *httclient) CallLog(params GameIdParams) (*goreq.Body, error) {
 	return h.call(get, "/log", params)
 }
 
 // Perform a call to /logout.
-func (h *httclient) CallLogout() (string, error) {
+func (h *httclient) CallLogout() (*goreq.Body, error) {
 	return h.call(get, "/logout", NoParams{})
 }
 
 // Perform a call to /play.
-func (h *httclient) CallPlay(params PlayParams) (string, error) {
+func (h *httclient) CallPlay(params PlayParams) (*goreq.Body, error) {
 	return h.call(get, "/play", params)
 }
 
 // Perform a call to /register.
-func (h *httclient) CallRegister(params UserCredentialsParams) (string, error) {
+func (h *httclient) CallRegister(params UserCredentialsParams) (*goreq.Body, error) {
 	return h.call(post, "/register", params)
 }
 
 // Perform a call to /shutdown.
-func (h *httclient) CallShutdown(params GenericIdParams) (string, error) {
+func (h *httclient) CallShutdown(params GenericIdParams) (*goreq.Body, error) {
 	return h.call(get, "/shutdown", params)
 }
 
 // Perform a call to /status.
-func (h *httclient) CallStatus(params GameIdParams) (string, error) {
+func (h *httclient) CallStatus(params GameIdParams) (*goreq.Body, error) {
 	return h.call(get, "/status", params)
 }
 
 // Perform a call to /whoami.
-func (h *httclient) CallWhoAmI() (string, error) {
+func (h *httclient) CallWhoAmI() (*goreq.Body, error) {
 	return h.call(get, "/whoami", NoParams{})
 }
