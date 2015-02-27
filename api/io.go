@@ -1,39 +1,10 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"github.com/franela/goreq"
 	"github.com/google/go-querystring/query"
 	"strings"
-)
-
-/*
-Low-level errors that can be returned by the HTTP API.
-See the spec: http://yann.regis-gianas.org/antroid/html/api?version=0
-*/
-var (
-	ErrUnknownUser       = errors.New("Unknown user")
-	ErrInvalidArgument   = errors.New("Invalid argument")
-	ErrGameAlreadyExists = errors.New("Game identifier already exists")
-	ErrUserAlreadyExists = errors.New("User already exists")
-	ErrWrongGame         = errors.New("Invalid game identifier")
-	ErrNoPerm            = errors.New("No permission")
-	ErrNoMoreSlot        = errors.New("No more slot")
-	ErrAlreadyJoined     = errors.New("Already joined")
-	ErrGameNotOver       = errors.New("The game is not over")
-	ErrWrongAnt          = errors.New("Invalid ant identifier")
-	ErrMustJoin          = errors.New("Must join first")
-	ErrNotLogged         = errors.New("Must be logged")
-	ErrWrongCmd          = errors.New("Invalid command")
-	ErrGameNotPlaying    = errors.New("The game is not playing")
-
-	ErrEmptyBody      = errors.New("Unexpected empty response body")
-	ErrUnknown        = errors.New("Unknown error")
-	ErrNotImplemented = errors.New("Not implemented")
-
-	Err4XX = errors.New("Client error")
-	Err5XX = errors.New("Server error")
 )
 
 /* The base URL of all API calls */

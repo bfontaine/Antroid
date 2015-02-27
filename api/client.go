@@ -7,23 +7,6 @@ type Client struct {
 	http          httclient
 }
 
-// See the API spec
-var errorCodes = map[int]error{
-	61760457:   ErrWrongCmd,
-	91411898:   ErrNoMoreSlot,
-	351345662:  ErrNoPerm,
-	427619750:  ErrWrongGame,
-	448649162:  ErrGameNotPlaying,
-	565287715:  ErrAlreadyJoined,
-	591603053:  ErrInvalidArgument,
-	693680202:  ErrUnknownUser,
-	813909381:  ErrMustJoin,
-	873213279:  ErrUserAlreadyExists,
-	942350302:  ErrWrongAnt,
-	965395831:  ErrGameNotOver,
-	1058501022: ErrNotLogged,
-}
-
 // Create a new API client.
 func NewClient() (Client, error) {
 	return Client{
@@ -36,10 +19,6 @@ func (cl *Client) getUserCredentialsParams() UserCredentialsParams {
 		Login:    cl.username,
 		Password: cl.password,
 	}
-}
-
-func (cl *Client) errorForCode(code int) error {
-	return errorCodes[code]
 }
 
 // Test if the client is authenticated.
@@ -89,7 +68,7 @@ func (cl *Client) RegisterWithCredentials(username, password string) error {
 	body.Close()
 
 	if resp.Status == "error" {
-		return cl.errorForCode(resp.Response.Error_code)
+		return errorForCode(resp.Response.Error_code)
 	}
 
 	return nil
