@@ -21,7 +21,7 @@ func (cl *Client) Authenticated() bool {
 
 // Get some info about the API.
 func (cl *Client) ApiInfo() (ApiInfo, error) {
-	_, err := cl.http.Call(GET, CALL_API_INFO, NoParams)
+	_, err := cl.http.CallApi()
 
 	if err != nil {
 		return ApiInfo{}, err
@@ -36,7 +36,7 @@ func (cl *Client) RegisterWithCredentials(username, password string) error {
 	cl.username = username
 	cl.password = password
 
-	_, err := cl.http.Call(GET, CALL_REGISTER, UserCredentialsParams{
+	_, err := cl.http.CallRegister(UserCredentialsParams{
 		user:     cl.username,
 		password: cl.password,
 	})
@@ -66,7 +66,7 @@ func (cl *Client) LoginWithCredentials(username, password string) error {
 
 // Anthenticate the client with its own credentials.
 func (cl *Client) Login() error {
-	_, err := cl.http.Call(POST, CALL_AUTH, UserCredentialsParams{
+	_, err := cl.http.CallAuth(UserCredentialsParams{
 		user:     cl.username,
 		password: cl.password,
 	})
@@ -84,14 +84,14 @@ func (cl *Client) Logout() error {
 	}
 
 	// not tested
-	_, err := cl.http.Call(POST, CALL_LOGOUT, NoParams)
+	_, err := cl.http.CallLogout()
 
 	return err
 }
 
 // Create a new game.
 func (cl *Client) CreateGame(gs *GameSpec) (Game, error) {
-	_, err := cl.http.Call(POST, CALL_CREATE, gs.toParams())
+	_, err := cl.http.CallCreate(gs.toParams())
 
 	if err != nil {
 		return Game{}, err
@@ -120,7 +120,7 @@ func (cl *Client) DestroyGameIndentifier(id GameId) error {
 
 // List all visible games.
 func (cl *Client) ListGames() ([]Game, error) {
-	_, err := cl.http.Call(GET, CALL_GAMES, NoParams)
+	_, err := cl.http.CallGames()
 	if err != nil {
 		return nil, err
 	}
@@ -155,18 +155,13 @@ func (cl *Client) Play(g *Game, cmds []*Command) error {
 	return ErrNotImplemented
 }
 
-// Shutdown a game (need to be root)
-func (cl *Client) ShutdownGame(g *Game) error {
-	return cl.ShutdownGameIdentifier(g.Identifier)
-}
-
-// Shutdown a game given its identifier (need to be root)
-func (cl *Client) ShutdownGameIdentifier(id GameId) error {
+// Shutdown a server (need to be root). We don't know what's this id for
+func (cl *Client) ShutdownIdentifier(id string) error {
 	if !cl.authenticated {
 		return ErrNoPerm
 	}
 
-	_, err := cl.http.Call(GET, CALL_SHUTDOWN, GameIdParams{id: id})
+	_, err := cl.http.CallShutdown(GenericIdParams{id: id})
 
 	return err
 }
@@ -183,7 +178,7 @@ func (cl *Client) GetGameIdentifierStatus(id GameId) error {
 	return ErrNotImplemented
 }
 
-// Check the client's status on the server-side
+// Check the client's status on the server-side and return it.
 func (cl *Client) WhoAmI() (string, error) {
 	return "", ErrNotImplemented
 }

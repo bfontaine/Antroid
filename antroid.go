@@ -9,7 +9,7 @@ import (
 func main() {
 	// just a demo
 	h := api.NewHTTClient()
-	res, err := h.Call(api.GET, api.CALL_API_INFO, api.NoParams)
+	res, err := h.CallApi()
 
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
