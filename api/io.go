@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/franela/goreq"
 	"github.com/google/go-querystring/query"
-	"strings"
+	"net/http/cookiejar"
 )
 
 /* The base URL of all API calls */
@@ -23,34 +23,24 @@ type httclient struct {
 	baseUrl    string
 	apiVersion string
 
-	// we use a dead simple implementation here, just storing the cookie as
-	// returned by the server and sending it back. We don't check the path nor
-	// the protocol nor the expiration date.
-	authCookie string
+	cookies *cookiejar.Jar
 }
 
 // Create a new HTTP client.
 func NewHTTClient() httclient {
+	jar, _ := cookiejar.New(nil)
+
 	return httclient{
 		UserAgent:  USER_AGENT,
 		baseUrl:    BASE_URL,
 		apiVersion: API_VERSION,
-		authCookie: "",
+		cookies:    jar,
 	}
 }
 
 // Return an absolute URL for a given call.
 func (h *httclient) makeApiUrl(call string) string {
 	return fmt.Sprintf("%s/%s%s", h.baseUrl, h.apiVersion, string(call))
-}
-
-func (h *httclient) setCookieFromHeader(header string) {
-	parts := strings.SplitN(header, ";", 2)
-	if len(parts) == 0 {
-		return
-	}
-
-	h.authCookie = parts[0]
 }
 
 // Return the appropriate error for a given HTTP code
@@ -77,6 +67,8 @@ func (h *httclient) call(method, call string, data interface{}) (*goreq.Body, er
 		// the server uses a self-signed certificate
 		Insecure: true,
 		//ShowDebug: true,
+
+		CookieJar: h.cookies,
 	}
 
 	if method == "GET" {
@@ -97,8 +89,6 @@ func (h *httclient) call(method, call string, data interface{}) (*goreq.Body, er
 		req.Body = queryString
 	}
 
-	req.AddHeader("Cookie", h.authCookie)
-
 	res, err := req.Do()
 
 	if err != nil {
@@ -107,10 +97,6 @@ func (h *httclient) call(method, call string, data interface{}) (*goreq.Body, er
 
 	if res.StatusCode != 200 {
 		return res.Body, h.getError(res.StatusCode)
-	}
-
-	if cookieHeader := res.Header.Get("Set-Cookie"); cookieHeader != "" {
-		h.setCookieFromHeader(cookieHeader)
 	}
 
 	return res.Body, nil
