@@ -1,13 +1,18 @@
 package api
 
+type ApiError struct {
+	Code        int
+	Description string
+}
+
 type ApiMethod struct {
-	Name        string
+	Method      string
 	Input       []string
 	Output      []string
-	Errors      []error
+	Errors      []ApiError
 	Description string
 }
 
 type ApiInfo struct {
-	Methods []ApiMethod
+	Doc map[string]ApiMethod
 }

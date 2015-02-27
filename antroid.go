@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bfontaine/antroid/api"
 	"os"
+	"strings"
 )
 
 func exitErr(e error) {
@@ -19,13 +20,25 @@ func main() {
 		exitErr(err)
 	}
 
+	info, err := cl.ApiInfo()
+
+	if err != nil {
+		exitErr(err)
+	}
+
+	var keys []string
+	for k, _ := range info.Doc {
+		keys = append(keys, k)
+	}
+	fmt.Printf("API methods: %s\n", strings.Join(keys, ", "))
+
 	s, err := cl.WhoAmI()
 
 	if err != nil {
 		exitErr(err)
 	}
 
-	fmt.Printf("username: %s\n", s)
+	fmt.Printf("Username: %s\n", s)
 
 	if err := cl.Logout(); err != nil {
 		exitErr(err)

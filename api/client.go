@@ -49,14 +49,27 @@ func (cl *Client) Authenticated() bool {
 
 // Get some info about the API.
 func (cl *Client) ApiInfo() (ApiInfo, error) {
-	_, err := cl.http.CallApi()
+	body, err := cl.http.CallApi()
 
 	if err != nil {
 		return ApiInfo{}, err
 	}
 
-	// TODO
-	return ApiInfo{}, ErrNotImplemented
+	if body == nil {
+		return ApiInfo{}, ErrEmptyBody
+	}
+
+	defer body.Close()
+
+	var resp apiInfoResponse
+
+	body.FromJsonTo(&resp)
+
+	if resp.Status != "completed" {
+		return ApiInfo{}, ErrUnknown
+	}
+
+	return resp.Response, nil
 }
 
 // Register some credentials for this client

@@ -29,6 +29,7 @@ var (
 	ErrGameNotPlaying    = errors.New("The game is not playing")
 
 	ErrEmptyBody      = errors.New("Unexpected empty response body")
+	ErrUnknown        = errors.New("Unknown error")
 	ErrNotImplemented = errors.New("Not implemented")
 
 	Err4XX = errors.New("Client error")

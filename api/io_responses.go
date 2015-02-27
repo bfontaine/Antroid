@@ -16,3 +16,8 @@ type whoAmIResponse struct {
 	Status   string
 	Response struct{ Status string }
 }
+
+type apiInfoResponse struct {
+	Status   string
+	Response ApiInfo
+}
