@@ -1,8 +1,5 @@
 package api
 
-// TODO we might be able to remove this package and use annoted version of
-// other structs (i.e. add `url:"..."` for each field)
-
 // used when an API call doesn't need any parameter
 type NoParams struct{}
 
