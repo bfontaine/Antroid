@@ -21,3 +21,11 @@ type apiInfoResponse struct {
 	Status   string
 	Response ApiInfo
 }
+
+type gamesResponse struct {
+	Status   string
+	Response struct {
+		// FIXME we don't know the format returned by the API right now
+		Games []interface{}
+	}
+}

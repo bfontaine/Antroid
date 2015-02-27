@@ -153,14 +153,28 @@ func (cl *Client) DestroyGameIndentifier(id GameId) error {
 
 // List all visible games.
 func (cl *Client) ListGames() ([]Game, error) {
-	_, err := cl.http.CallGames()
+	body, err := cl.http.CallGames()
+
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO
+	if body == nil {
+		return []Game{}, ErrEmptyBody
+	}
 
-	return nil, ErrNotImplemented
+	defer body.Close()
+
+	var resp gamesResponse
+
+	body.FromJsonTo(&resp)
+
+	if resp.Status != "completed" {
+		return []Game{}, ErrUnknown
+	}
+
+	//return resp.Response.Games, nil
+	return []Game{}, ErrNotImplemented
 }
 
 // Join a game
