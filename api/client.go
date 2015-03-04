@@ -5,7 +5,7 @@ type Client struct {
 	username      string
 	password      string
 	authenticated bool
-	http          httclient
+	http          *Httclient
 }
 
 // NewClient creates and returns a new API client.

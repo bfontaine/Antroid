@@ -5,6 +5,7 @@ import (
 	"github.com/franela/goreq"
 	"github.com/google/go-querystring/query"
 	"net/http/cookiejar"
+	"strings"
 )
 
 /* The base URL of all API calls */
@@ -17,7 +18,7 @@ const defaultAPIVersion = "0"
 const defaultUserAgent = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
 
 // An HTTP client for the API server
-type httclient struct {
+type Httclient struct {
 	UserAgent string
 
 	baseURL    string
@@ -27,10 +28,10 @@ type httclient struct {
 }
 
 // NewHTTClient creates a new HTTP client.
-func NewHTTClient() httclient {
+func NewHTTClient() *Httclient {
 	jar, _ := cookiejar.New(nil)
 
-	return httclient{
+	return &Httclient{
 		UserAgent:  defaultUserAgent,
 		baseURL:    defaultBaseURL,
 		apiVersion: defaultAPIVersion,
@@ -39,7 +40,7 @@ func NewHTTClient() httclient {
 }
 
 // Return an absolute URL for a given call.
-func (h *httclient) makeAPIURL(call string) string {
+func (h *Httclient) makeAPIURL(call string) string {
 	return fmt.Sprintf("%s/%s%s", h.baseURL, h.apiVersion, string(call))
 }
 
@@ -57,7 +58,9 @@ func getError(code int) error {
 
 // Make an HTTP call to the remote server and return its response body.
 // Don't forget to close it if it's not nil.
-func (h *httclient) call(method, call string, data interface{}) (b *Body) {
+func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
+	b = &Body{}
+
 	req := goreq.Request{
 		Uri:       h.makeAPIURL(call),
 		Method:    string(method),
@@ -73,14 +76,22 @@ func (h *httclient) call(method, call string, data interface{}) (b *Body) {
 	if method == "GET" {
 		// goreq will encode everything for us
 		req.QueryString = data
-	} else {
-		// we need to encode our values because the server doesn't accept JSON in
-		// requests.
+	} else if data != nil {
+		// we need to encode our values because the server doesn't accept JSON
+		// in requests.
 		values, err := query.Values(data)
 
 		if err != nil {
 			b.err = err
 			return
+		}
+
+		// set all keys to lower-case and remove multiple values (e.g. a=2&a=3)
+		for k, v := range values {
+			if len(k) > 0 && len(v) > 0 && k[0] >= 'A' && k[0] <= 'Z' {
+				values.Set(strings.ToLower(k), v[0])
+				values.Del(k)
+			}
 		}
 
 		queryString := values.Encode()
@@ -117,66 +128,66 @@ const (
 */
 
 // Perform a call to /api.
-func (h *httclient) CallAPI() *Body {
+func (h *Httclient) CallAPI() *Body {
 	return h.call(get, "/api", NoParams{})
 }
 
 // Perform a call to /auth.
-func (h *httclient) CallAuth(params UserCredentialsParams) *Body {
+func (h *Httclient) CallAuth(params UserCredentialsParams) *Body {
 	return h.call(post, "/auth", params)
 }
 
 // Perform a call to /create.
-func (h *httclient) CallCreate(params GameSpecParams) *Body {
+func (h *Httclient) CallCreate(params GameSpecParams) *Body {
 	return h.call(get, "/create", params)
 }
 
 // Perform a call to /destroy.
-func (h *httclient) CallDestroy(params GameIDParams) *Body {
+func (h *Httclient) CallDestroy(params GameIDParams) *Body {
 	return h.call(get, "/destroy", params)
 }
 
 // Perform a call to /games.
-func (h *httclient) CallGames() *Body {
+func (h *Httclient) CallGames() *Body {
 	return h.call(get, "/games", NoParams{})
 }
 
 // Perform a call to /join.
-func (h *httclient) CallJoin(params GameIDParams) *Body {
+func (h *Httclient) CallJoin(params GameIDParams) *Body {
 	return h.call(get, "/join", params)
 }
 
 // Perform a call to /log.
-func (h *httclient) CallLog(params GameIDParams) *Body {
+func (h *Httclient) CallLog(params GameIDParams) *Body {
 	return h.call(get, "/log", params)
 }
 
 // Perform a call to /logout.
-func (h *httclient) CallLogout() *Body {
+func (h *Httclient) CallLogout() *Body {
 	return h.call(get, "/logout", NoParams{})
 }
 
 // Perform a call to /play.
-func (h *httclient) CallPlay(params PlayParams) *Body {
+func (h *Httclient) CallPlay(params PlayParams) *Body {
 	return h.call(get, "/play", params)
 }
 
 // Perform a call to /register.
-func (h *httclient) CallRegister(params UserCredentialsParams) *Body {
+func (h *Httclient) CallRegister(params UserCredentialsParams) *Body {
 	return h.call(post, "/register", params)
 }
 
 // Perform a call to /shutdown.
-func (h *httclient) CallShutdown(params GenericIDParams) *Body {
+func (h *Httclient) CallShutdown(params GenericIDParams) *Body {
 	return h.call(get, "/shutdown", params)
 }
 
 // Perform a call to /status.
-func (h *httclient) CallStatus(params GameIDParams) *Body {
+func (h *Httclient) CallStatus(params GameIDParams) *Body {
 	return h.call(get, "/status", params)
 }
 
 // Perform a call to /whoami.
-func (h *httclient) CallWhoAmI() *Body {
+func (h *Httclient) CallWhoAmI() *Body {
 	return h.call(get, "/whoami", NoParams{})
 }
