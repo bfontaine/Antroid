@@ -44,7 +44,7 @@ func (h *httclient) makeApiUrl(call string) string {
 }
 
 // Return the appropriate error for a given HTTP code
-func (h *httclient) getError(code int) error {
+func getError(code int) error {
 	switch code / 100 {
 	case 4:
 		return Err4XX
@@ -96,9 +96,10 @@ func (h *httclient) call(method, call string, data interface{}) (b *Body) {
 	}
 
 	b.Content = res.Body
+	b.StatusCode = res.StatusCode
 
-	if res.StatusCode != 200 {
-		err = h.getError(res.StatusCode)
+	if b.StatusCode != 200 {
+		b.err = getError(b.StatusCode)
 	}
 
 	return

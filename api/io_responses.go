@@ -47,8 +47,9 @@ type gamesResponse struct {
 }
 
 type Body struct {
-	Content *goreq.Body
-	err     error
+	Content    *goreq.Body
+	StatusCode int
+	err        error
 }
 
 func (b Body) IsEmpty() bool {

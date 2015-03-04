@@ -5,7 +5,7 @@ type NoParams struct{}
 
 // game id params
 type GameIdParams struct {
-	Id GameId `url: "id"`
+	Id GameId `url:"id"`
 }
 
 // game spec params
