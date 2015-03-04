@@ -27,28 +27,29 @@ func (cl *Client) Authenticated() bool {
 }
 
 // Get some info about the API.
-func (cl *Client) ApiInfo() (ApiInfo, error) {
-	body, err := cl.http.CallApi()
+func (cl *Client) ApiInfo() (info ApiInfo, err error) {
+	body := cl.http.CallApi()
 
-	if err != nil {
-		return ApiInfo{}, err
-	}
-
-	if body == nil {
-		return ApiInfo{}, ErrEmptyBody
+	if err = body.Error(); err != nil {
+		return
 	}
 
 	defer body.Close()
 
 	var resp apiInfoResponse
 
-	body.FromJsonTo(&resp)
-
-	if resp.Status != "completed" {
-		return ApiInfo{}, ErrUnknown
+	if err = body.FromJsonTo(&resp); err != nil {
+		return
 	}
 
-	return resp.Response, nil
+	if resp.Status != "completed" {
+		err = ErrUnknown
+		return
+	}
+
+	info = resp.Response
+
+	return
 }
 
 // Register some credentials for this client
@@ -56,22 +57,21 @@ func (cl *Client) RegisterWithCredentials(username, password string) error {
 	cl.username = username
 	cl.password = password
 
-	body, err := cl.http.CallRegister(cl.getUserCredentialsParams())
+	body := cl.http.CallRegister(cl.getUserCredentialsParams())
 
-	if err != nil {
-		return nil
+	if err := body.Error(); err != nil {
+		return err
 	}
 
-	var resp registerResponse
-	body.FromJsonTo(&resp)
+	defer body.Close()
 
-	body.Close()
+	var resp simpleResponse
 
-	if resp.Status == "error" {
-		return errorForCode(resp.Response.Error_code)
+	if err := body.FromJsonTo(&resp); err != nil {
+		return err
 	}
 
-	return nil
+	return resp.Error()
 }
 
 // Authenticate the client with the given credentials.
@@ -85,7 +85,9 @@ func (cl *Client) LoginWithCredentials(username, password string) error {
 			return nil
 		}
 
-		cl.Logout()
+		if err := cl.Logout(); err != nil {
+			return err
+		}
 	}
 
 	cl.username = username
@@ -95,43 +97,70 @@ func (cl *Client) LoginWithCredentials(username, password string) error {
 }
 
 // Anthenticate the client with its own credentials.
-func (cl *Client) Login() error {
-	body, err := cl.http.CallAuth(cl.getUserCredentialsParams())
+func (cl *Client) Login() (err error) {
+	body := cl.http.CallAuth(cl.getUserCredentialsParams())
+
+	err = body.Error()
 
 	cl.authenticated = (err == nil)
 
-	// TODO check the body
-	if body != nil {
-		body.Close()
+	if err != nil {
+		return
 	}
 
-	return err
+	defer body.Close()
+
+	var resp simpleResponse
+
+	if err = body.FromJsonTo(&resp); err != nil {
+		return
+	}
+
+	if resp.IsError() {
+		err = resp.Error()
+	}
+
+	return
 }
 
 // Logout the client.
 // If the client wasn't already authenticated the method returns without
 // failing.
-func (cl *Client) Logout() error {
-	if !cl.authenticated {
-		return nil
+func (cl *Client) Logout() (err error) {
+	if cl.authenticated {
+		b := cl.http.CallLogout()
+
+		return b.Error()
 	}
 
-	// not tested
-	_, err := cl.http.CallLogout()
-
-	return err
+	return
 }
 
 // Create a new game.
-func (cl *Client) CreateGame(gs *GameSpec) (Game, error) {
-	_, err := cl.http.CallCreate(gs.toParams())
+func (cl *Client) CreateGame(gs *GameSpec) (g Game, err error) {
+	body := cl.http.CallCreate(gs.toParams())
 
-	if err != nil {
-		return Game{}, err
+	if err = body.Error(); err != nil {
+		return
 	}
 
-	// TODO
-	return Game{}, ErrNotImplemented
+	defer body.Close()
+
+	var resp simpleResponse
+
+	if err = body.FromJsonTo(&resp); err != nil {
+		return
+	}
+
+	if resp.IsError() {
+		err = resp.Error()
+		return
+	}
+
+	g.Spec = gs
+	g.Identifier = GameId(resp.Response.Identifier)
+
+	return
 }
 
 // Destroy a game.
@@ -152,15 +181,11 @@ func (cl *Client) DestroyGameIndentifier(id GameId) error {
 }
 
 // List all visible games.
-func (cl *Client) ListGames() ([]Game, error) {
-	body, err := cl.http.CallGames()
+func (cl *Client) ListGames() (games []Game, err error) {
+	body := cl.http.CallGames()
 
-	if err != nil {
-		return nil, err
-	}
-
-	if body == nil {
-		return []Game{}, ErrEmptyBody
+	if err = body.Error(); err != nil {
+		return
 	}
 
 	defer body.Close()
@@ -170,11 +195,13 @@ func (cl *Client) ListGames() ([]Game, error) {
 	body.FromJsonTo(&resp)
 
 	if resp.Status != "completed" {
-		return []Game{}, ErrUnknown
+		err = ErrUnknown
+		return
 	}
 
 	//return resp.Response.Games, nil
-	return []Game{}, ErrNotImplemented
+	err = ErrNotImplemented
+	return
 }
 
 // Join a game
@@ -208,9 +235,9 @@ func (cl *Client) ShutdownIdentifier(id string) error {
 		return ErrNoPerm
 	}
 
-	_, err := cl.http.CallShutdown(GenericIdParams{Id: id})
+	body := cl.http.CallShutdown(GenericIdParams{Id: id})
 
-	return err
+	return body.Error()
 }
 
 // Get a game's status
@@ -230,28 +257,29 @@ func (cl *Client) GetGameIdentifierStatus(id GameId) error {
 var whoAmILoginSlice = len("logged as ")
 
 // Check the client's status on the server-side and return it.
-func (cl *Client) WhoAmI() (string, error) {
-	body, err := cl.http.CallWhoAmI()
+func (cl *Client) WhoAmI() (s string, err error) {
+	body := cl.http.CallWhoAmI()
 
-	if err != nil {
-		return "", err
-	}
-
-	if body == nil {
-		return "", ErrEmptyBody
+	if err = body.Error(); err != nil {
+		return
 	}
 
 	defer body.Close()
 
-	var resp whoAmIResponse
+	var resp simpleResponse
 
-	body.FromJsonTo(&resp)
-
-	cl.authenticated = (resp.Response.Status != "not_logged")
-
-	if !cl.authenticated {
-		return "", ErrNotLogged
+	if err = body.FromJsonTo(&resp); err != nil {
+		return
 	}
 
-	return resp.Response.Status[whoAmILoginSlice:], nil
+	st := resp.Response.Status
+	cl.authenticated = (st != "" && st != "not_logged")
+
+	if !cl.authenticated {
+		err = ErrNotLogged
+		return
+	}
+
+	s = resp.Response.Status[whoAmILoginSlice:]
+	return
 }

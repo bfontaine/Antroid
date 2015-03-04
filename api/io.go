@@ -8,13 +8,13 @@ import (
 )
 
 /* The base URL of all API calls */
-var BASE_URL = "https://yann.regis-gianas.org/antroid"
+const BASE_URL = "https://yann.regis-gianas.org/antroid"
 
 /* The API version we support */
-var API_VERSION = "0"
+const API_VERSION = "0"
 
 /* The User-Agent header we use in all requests */
-var USER_AGENT = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
+const USER_AGENT = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
 
 // An HTTP client for the API server
 type httclient struct {
@@ -57,8 +57,7 @@ func (h *httclient) getError(code int) error {
 
 // Make an HTTP call to the remote server and return its response body.
 // Don't forget to close it if it's not nil.
-func (h *httclient) call(method, call string, data interface{}) (*goreq.Body, error) {
-
+func (h *httclient) call(method, call string, data interface{}) (b *Body) {
 	req := goreq.Request{
 		Uri:       h.makeApiUrl(call),
 		Method:    string(method),
@@ -75,13 +74,13 @@ func (h *httclient) call(method, call string, data interface{}) (*goreq.Body, er
 		// goreq will encode everything for us
 		req.QueryString = data
 	} else {
-
 		// we need to encode our values because the server doesn't accept JSON in
 		// requests.
 		values, err := query.Values(data)
 
 		if err != nil {
-			return nil, err
+			b.err = err
+			return
 		}
 
 		queryString := values.Encode()
@@ -92,17 +91,20 @@ func (h *httclient) call(method, call string, data interface{}) (*goreq.Body, er
 	res, err := req.Do()
 
 	if err != nil {
-		return nil, err
+		b.err = err
+		return
 	}
+
+	b.Content = res.Body
 
 	if res.StatusCode != 200 {
-		return res.Body, h.getError(res.StatusCode)
+		err = h.getError(res.StatusCode)
 	}
 
-	return res.Body, nil
+	return
 }
 
-var (
+const (
 	get  = "GET"
 	post = "POST"
 )
@@ -114,66 +116,66 @@ var (
 */
 
 // Perform a call to /api.
-func (h *httclient) CallApi() (*goreq.Body, error) {
+func (h *httclient) CallApi() *Body {
 	return h.call(get, "/api", NoParams{})
 }
 
 // Perform a call to /auth.
-func (h *httclient) CallAuth(params UserCredentialsParams) (*goreq.Body, error) {
+func (h *httclient) CallAuth(params UserCredentialsParams) *Body {
 	return h.call(post, "/auth", params)
 }
 
 // Perform a call to /create.
-func (h *httclient) CallCreate(params GameSpecParams) (*goreq.Body, error) {
+func (h *httclient) CallCreate(params GameSpecParams) *Body {
 	return h.call(get, "/create", params)
 }
 
 // Perform a call to /destroy.
-func (h *httclient) CallDestroy(params GameIdParams) (*goreq.Body, error) {
+func (h *httclient) CallDestroy(params GameIdParams) *Body {
 	return h.call(get, "/destroy", params)
 }
 
 // Perform a call to /games.
-func (h *httclient) CallGames() (*goreq.Body, error) {
+func (h *httclient) CallGames() *Body {
 	return h.call(get, "/games", NoParams{})
 }
 
 // Perform a call to /join.
-func (h *httclient) CallJoin(params GameIdParams) (*goreq.Body, error) {
+func (h *httclient) CallJoin(params GameIdParams) *Body {
 	return h.call(get, "/join", params)
 }
 
 // Perform a call to /log.
-func (h *httclient) CallLog(params GameIdParams) (*goreq.Body, error) {
+func (h *httclient) CallLog(params GameIdParams) *Body {
 	return h.call(get, "/log", params)
 }
 
 // Perform a call to /logout.
-func (h *httclient) CallLogout() (*goreq.Body, error) {
+func (h *httclient) CallLogout() *Body {
 	return h.call(get, "/logout", NoParams{})
 }
 
 // Perform a call to /play.
-func (h *httclient) CallPlay(params PlayParams) (*goreq.Body, error) {
+func (h *httclient) CallPlay(params PlayParams) *Body {
 	return h.call(get, "/play", params)
 }
 
 // Perform a call to /register.
-func (h *httclient) CallRegister(params UserCredentialsParams) (*goreq.Body, error) {
+func (h *httclient) CallRegister(params UserCredentialsParams) *Body {
 	return h.call(post, "/register", params)
 }
 
 // Perform a call to /shutdown.
-func (h *httclient) CallShutdown(params GenericIdParams) (*goreq.Body, error) {
+func (h *httclient) CallShutdown(params GenericIdParams) *Body {
 	return h.call(get, "/shutdown", params)
 }
 
 // Perform a call to /status.
-func (h *httclient) CallStatus(params GameIdParams) (*goreq.Body, error) {
+func (h *httclient) CallStatus(params GameIdParams) *Body {
 	return h.call(get, "/status", params)
 }
 
 // Perform a call to /whoami.
-func (h *httclient) CallWhoAmI() (*goreq.Body, error) {
+func (h *httclient) CallWhoAmI() *Body {
 	return h.call(get, "/whoami", NoParams{})
 }

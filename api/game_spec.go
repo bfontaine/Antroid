@@ -39,7 +39,7 @@ func (gs *GameSpec) toParams() GameSpecParams {
 }
 
 // constants for the v0 API
-var (
+const (
 	MIN_PACE            = 1
 	MAX_PACE            = 100
 	MIN_TURNS           = 1
