@@ -20,14 +20,14 @@ func main() {
 		exitErr(err)
 	}
 
-	info, err := cl.ApiInfo()
+	info, err := cl.APIInfo()
 
 	if err != nil {
 		exitErr(err)
 	}
 
 	var keys []string
-	for k, _ := range info.Doc {
+	for k := range info.Doc {
 		keys = append(keys, k)
 	}
 	fmt.Printf("API methods: %s\n", strings.Join(keys, ", "))

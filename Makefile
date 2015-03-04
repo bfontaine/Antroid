@@ -3,7 +3,6 @@ all:
 
 check: devdeps
 	go vet ./...
-	golint ./...
 
 
 devdeps:

@@ -1,8 +1,10 @@
 package api
 
-type GameId string
+// GameID is a game id
+type GameID string
 
+// Game represents a game
 type Game struct {
-	Identifier GameId
+	Identifier GameID
 	Spec       *GameSpec
 }

@@ -1,14 +1,16 @@
 package api
 
-// used when an API call doesn't need any parameter
+// NoParams is used when an API call doesn't need any parameter
 type NoParams struct{}
 
-// game id params
-type GameIdParams struct {
-	Id GameId `url:"id"`
+// GameIDParams represent a simple parameters struct for when we need to send a
+// game id
+type GameIDParams struct {
+	Id GameID `url:"id"`
 }
 
-// game spec params
+// GameSpecParams represents the parameters struct for when we need to send the
+// specs for a game (e.g. to create it)
 type GameSpecParams struct {
 	Users             string `url:"users"`
 	Teaser            string `url:"teaser"`
@@ -21,17 +23,20 @@ type GameSpecParams struct {
 	Initial_acid      int    `url:"initial_acid"`
 }
 
-// user/password params
+// UserCredentialsParams represents the parameters struct for the user/password
+// params
 type UserCredentialsParams struct {
 	Login    string `url:"login"`
 	Password string `url:"password"`
 }
 
+// PlayParams represents the parameters struct needed to play during a turn
 type PlayParams struct {
 	Id   string `url:"id"`
 	Cmds string `url:"cmds"`
 }
 
-type GenericIdParams struct {
+// GenericIDParams is a parameters struct for when we need to send an id
+type GenericIDParams struct {
 	Id string `url:"id"`
 }

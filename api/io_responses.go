@@ -35,7 +35,7 @@ func (r simpleResponse) Error() error {
 
 type apiInfoResponse struct {
 	Status   string
-	Response ApiInfo
+	Response APIInfo
 }
 
 type gamesResponse struct {
@@ -46,16 +46,19 @@ type gamesResponse struct {
 	}
 }
 
+// Body is a body response from the API
 type Body struct {
 	Content    *goreq.Body
 	StatusCode int
 	err        error
 }
 
+// IsEmpty returns true if the body response is empty
 func (b Body) IsEmpty() bool {
 	return b.Content == nil
 }
 
+// Error returns any error with this body
 func (b Body) Error() (err error) {
 	if b.err != nil {
 		err = b.err
@@ -68,7 +71,8 @@ func (b Body) Error() (err error) {
 	return
 }
 
-func (b Body) FromJsonTo(target interface{}) (err error) {
+// FromJSONTo assumes the body contains JSON and dumps it in the given struct
+func (b Body) FromJSONTo(target interface{}) (err error) {
 	err = b.Error()
 
 	if err == nil {
@@ -78,6 +82,7 @@ func (b Body) FromJsonTo(target interface{}) (err error) {
 	return
 }
 
+// Close closes the body if it's not empty
 func (b Body) Close() (err error) {
 	if !b.IsEmpty() {
 		err = b.Content.Close()

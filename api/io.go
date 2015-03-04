@@ -8,39 +8,39 @@ import (
 )
 
 /* The base URL of all API calls */
-const BASE_URL = "https://yann.regis-gianas.org/antroid"
+const defaultBaseURL = "https://yann.regis-gianas.org/antroid"
 
 /* The API version we support */
-const API_VERSION = "0"
+const defaultAPIVersion = "0"
 
 /* The User-Agent header we use in all requests */
-const USER_AGENT = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
+const defaultUserAgent = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
 
 // An HTTP client for the API server
 type httclient struct {
 	UserAgent string
 
-	baseUrl    string
+	baseURL    string
 	apiVersion string
 
 	cookies *cookiejar.Jar
 }
 
-// Create a new HTTP client.
+// NewHTTClient creates a new HTTP client.
 func NewHTTClient() httclient {
 	jar, _ := cookiejar.New(nil)
 
 	return httclient{
-		UserAgent:  USER_AGENT,
-		baseUrl:    BASE_URL,
-		apiVersion: API_VERSION,
+		UserAgent:  defaultUserAgent,
+		baseURL:    defaultBaseURL,
+		apiVersion: defaultAPIVersion,
 		cookies:    jar,
 	}
 }
 
 // Return an absolute URL for a given call.
-func (h *httclient) makeApiUrl(call string) string {
-	return fmt.Sprintf("%s/%s%s", h.baseUrl, h.apiVersion, string(call))
+func (h *httclient) makeAPIURL(call string) string {
+	return fmt.Sprintf("%s/%s%s", h.baseURL, h.apiVersion, string(call))
 }
 
 // Return the appropriate error for a given HTTP code
@@ -59,7 +59,7 @@ func getError(code int) error {
 // Don't forget to close it if it's not nil.
 func (h *httclient) call(method, call string, data interface{}) (b *Body) {
 	req := goreq.Request{
-		Uri:       h.makeApiUrl(call),
+		Uri:       h.makeAPIURL(call),
 		Method:    string(method),
 		Accept:    "application/json",
 		UserAgent: h.UserAgent,
@@ -117,7 +117,7 @@ const (
 */
 
 // Perform a call to /api.
-func (h *httclient) CallApi() *Body {
+func (h *httclient) CallAPI() *Body {
 	return h.call(get, "/api", NoParams{})
 }
 
@@ -132,7 +132,7 @@ func (h *httclient) CallCreate(params GameSpecParams) *Body {
 }
 
 // Perform a call to /destroy.
-func (h *httclient) CallDestroy(params GameIdParams) *Body {
+func (h *httclient) CallDestroy(params GameIDParams) *Body {
 	return h.call(get, "/destroy", params)
 }
 
@@ -142,12 +142,12 @@ func (h *httclient) CallGames() *Body {
 }
 
 // Perform a call to /join.
-func (h *httclient) CallJoin(params GameIdParams) *Body {
+func (h *httclient) CallJoin(params GameIDParams) *Body {
 	return h.call(get, "/join", params)
 }
 
 // Perform a call to /log.
-func (h *httclient) CallLog(params GameIdParams) *Body {
+func (h *httclient) CallLog(params GameIDParams) *Body {
 	return h.call(get, "/log", params)
 }
 
@@ -167,12 +167,12 @@ func (h *httclient) CallRegister(params UserCredentialsParams) *Body {
 }
 
 // Perform a call to /shutdown.
-func (h *httclient) CallShutdown(params GenericIdParams) *Body {
+func (h *httclient) CallShutdown(params GenericIDParams) *Body {
 	return h.call(get, "/shutdown", params)
 }
 
 // Perform a call to /status.
-func (h *httclient) CallStatus(params GameIdParams) *Body {
+func (h *httclient) CallStatus(params GameIDParams) *Body {
 	return h.call(get, "/status", params)
 }
 
