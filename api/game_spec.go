@@ -20,14 +20,14 @@ type GameSpec struct {
 
 func (gs *GameSpec) toParams() GameSpecParams {
 	gsp := GameSpecParams{
-		Teaser:            gs.Description,
-		Pace:              gs.Pace,
-		Nb_turn:           gs.Turns,
-		Nb_ant_per_player: gs.AntsPerPlayer,
-		Nb_player:         gs.MaxPlayers,
-		Minimal_nb_player: gs.MinPlayers,
-		Initial_energy:    gs.InitialEnergy,
-		Initial_acid:      gs.InitialAcid,
+		Teaser:          gs.Description,
+		Pace:            gs.Pace,
+		NbTurn:          gs.Turns,
+		NbAntPerPlayer:  gs.AntsPerPlayer,
+		NbPlayer:        gs.MaxPlayers,
+		MinimalNbPlayer: gs.MinPlayers,
+		InitialEnergy:   gs.InitialEnergy,
+		InitialAcid:     gs.InitialAcid,
 	}
 
 	if gs.Public {

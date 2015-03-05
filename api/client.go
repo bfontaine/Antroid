@@ -237,7 +237,7 @@ func (cl *Client) ShutdownIdentifier(id string) error {
 		return ErrNoPerm
 	}
 
-	body := cl.http.CallShutdown(GenericIDParams{Id: id})
+	body := cl.http.CallShutdown(GenericIDParams{ID: id})
 
 	return body.Error()
 }

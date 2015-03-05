@@ -196,15 +196,15 @@ func TestIO(t *testing.T) {
 			g.Describe("CallCreate", func() {
 				g.It("Should GET /create with game parameters", func() {
 					b := h.CallCreate(GameSpecParams{
-						Users:             "foo",
-						Teaser:            "desc",
-						Pace:              12,
-						Nb_turn:           34,
-						Nb_ant_per_player: 2,
-						Nb_player:         1,
-						Minimal_nb_player: 1,
-						Initial_energy:    40,
-						Initial_acid:      35,
+						Users:           "foo",
+						Teaser:          "desc",
+						Pace:            12,
+						NbTurn:          34,
+						NbAntPerPlayer:  2,
+						NbPlayer:        1,
+						MinimalNbPlayer: 1,
+						InitialEnergy:   40,
+						InitialAcid:     35,
 					})
 
 					o.Expect(b).NotTo(o.BeNil())
@@ -221,7 +221,7 @@ func TestIO(t *testing.T) {
 
 			g.Describe("CallDestroy", func() {
 				g.It("Should GET /destroy with a game ID", func() {
-					b := h.CallDestroy(GameIDParams{Id: GameID("foobar")})
+					b := h.CallDestroy(GameIDParams{ID: GameID("foobar")})
 
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
@@ -244,7 +244,7 @@ func TestIO(t *testing.T) {
 
 			g.Describe("CallJoin", func() {
 				g.It("Should GET /join with a game ID", func() {
-					b := h.CallJoin(GameIDParams{Id: GameID("foobar1")})
+					b := h.CallJoin(GameIDParams{ID: GameID("foobar1")})
 
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
@@ -255,7 +255,7 @@ func TestIO(t *testing.T) {
 			})
 			g.Describe("CallLog", func() {
 				g.It("Should GET /log with a game ID", func() {
-					b := h.CallLog(GameIDParams{Id: GameID("foobar42")})
+					b := h.CallLog(GameIDParams{ID: GameID("foobar42")})
 
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
@@ -278,7 +278,7 @@ func TestIO(t *testing.T) {
 
 			g.Describe("CallPlay", func() {
 				g.It("Should GET /play with a game id and some commands", func() {
-					b := h.CallPlay(PlayParams{Id: GameID("a"), Cmds: "xyz"})
+					b := h.CallPlay(PlayParams{ID: GameID("a"), Cmds: "xyz"})
 
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
@@ -305,7 +305,7 @@ func TestIO(t *testing.T) {
 
 			g.Describe("CallShutdown", func() {
 				g.It("Should GET /shutdown with an ID", func() {
-					b := h.CallShutdown(GenericIDParams{Id: "abc"})
+					b := h.CallShutdown(GenericIDParams{ID: "abc"})
 
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
@@ -317,7 +317,7 @@ func TestIO(t *testing.T) {
 
 			g.Describe("CallStatus", func() {
 				g.It("Should GET /status with a game ID", func() {
-					b := h.CallStatus(GameIDParams{Id: GameID("f42")})
+					b := h.CallStatus(GameIDParams{ID: GameID("f42")})
 
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
