@@ -32,7 +32,7 @@ type UserCredentialsParams struct {
 
 // PlayParams represents the parameters struct needed to play during a turn
 type PlayParams struct {
-	Id   string `url:"id"`
+	Id   GameID `url:"id"`
 	Cmds string `url:"cmds"`
 }
 
