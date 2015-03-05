@@ -31,7 +31,7 @@ func (gs *GameSpec) toParams() GameSpecParams {
 	}
 
 	if gs.Public {
-		gsp.Users = "+"
+		gsp.Users = "all"
 	} else {
 		gsp.Users = strings.Join(gs.Players, ",")
 	}
