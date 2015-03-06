@@ -24,6 +24,7 @@ var (
 
 	ErrEmptyBody      = errors.New("Unexpected empty response body")
 	ErrUnknown        = errors.New("Unknown error")
+	ErrUnknownCode    = errors.New("Unknown error code")
 	ErrNotImplemented = errors.New("Not implemented")
 
 	Err4XX = errors.New("Client error")
@@ -47,6 +48,11 @@ var errorCodes = map[int]error{
 	1058501022: ErrNotLogged,
 }
 
-func errorForCode(code int) error {
-	return errorCodes[code]
+func errorForCode(code int) (err error) {
+	err, ok := errorCodes[code]
+	if !ok {
+		err = ErrUnknownCode
+	}
+
+	return
 }
