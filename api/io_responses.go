@@ -61,7 +61,7 @@ func (b Body) IsEmpty() bool {
 // Error returns any error with this body
 func (b Body) Error() (err error) {
 	if b.err != nil {
-		err = b.err
+		return b.err
 	}
 
 	if b.IsEmpty() {
