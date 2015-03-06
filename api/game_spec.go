@@ -39,20 +39,27 @@ func (gs *GameSpec) toParams() GameSpecParams {
 	return gsp
 }
 
+type intRange struct {
+	min int
+	max int
+}
+
+func IntRange(min, max int) intRange {
+	return intRange{min: min, max: max}
+}
+
+func (r intRange) Include(n int) bool {
+	return r.min <= n && n <= r.max
+}
+
 // constants for the v0 API
-const (
-	minPace          = 1
-	maxPace          = 100
-	minTurns         = 1
-	maxTurns         = 100000
-	minAntsPerPlayer = 1
-	maxAntsPerPlayer = 42
-	minPlayers       = 1
-	maxPlayers       = 42
-	minInitialEnergy = 1
-	maxInitialEnergy = 1000
-	minInitialAcid   = 1
-	maxInitialAcid   = 1000
+var (
+	paceRange          = IntRange(1, 100)
+	turnsRange         = IntRange(1, 100000)
+	antsPerPlayerRange = IntRange(1, 42)
+	playersRange       = IntRange(1, 42)
+	initialEnergyRange = IntRange(1, 1000)
+	initialAcidRange   = IntRange(1, 1000)
 )
 
 // Validate checks that the spec validates against the spec spec
@@ -65,20 +72,14 @@ func (gs *GameSpec) Validate() bool {
 		return false
 	}
 
-	if gs.Pace < minPace ||
-		gs.Pace > maxPace ||
-		gs.Turns < minTurns ||
-		gs.Turns > maxTurns ||
-		gs.AntsPerPlayer < minAntsPerPlayer ||
-		gs.AntsPerPlayer > maxAntsPerPlayer ||
-		gs.MaxPlayers < minPlayers ||
-		gs.MaxPlayers > maxPlayers ||
-		gs.MinPlayers < minPlayers ||
+	if !paceRange.Include(gs.Pace) ||
+		!turnsRange.Include(gs.Turns) ||
+		!antsPerPlayerRange.Include(gs.AntsPerPlayer) ||
+		!playersRange.Include(gs.MinPlayers) ||
+		!playersRange.Include(gs.MaxPlayers) ||
 		gs.MinPlayers > gs.MaxPlayers ||
-		gs.InitialEnergy < minInitialEnergy ||
-		gs.InitialEnergy > maxInitialEnergy ||
-		gs.InitialAcid < minInitialAcid ||
-		gs.InitialAcid > maxInitialAcid {
+		!initialEnergyRange.Include(gs.InitialEnergy) ||
+		!initialAcidRange.Include(gs.InitialAcid) {
 		return false
 	}
 
