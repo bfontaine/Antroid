@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func NewFakeAPIServer() *httptest.Server {
+func NewFakeHTTPSServer() *httptest.Server {
 	return httptest.NewTLSServer(http.HandlerFunc(func(
 		w http.ResponseWriter, r *http.Request) {
 
@@ -94,7 +94,7 @@ func TestIO(t *testing.T) {
 			var ts *httptest.Server
 			var h *Httclient
 
-			g.Before(func() { ts = NewFakeAPIServer() })
+			g.Before(func() { ts = NewFakeHTTPSServer() })
 			g.After(func() { ts.Close() })
 
 			g.BeforeEach(func() {
@@ -159,7 +159,7 @@ func TestIO(t *testing.T) {
 			var ts *httptest.Server
 			var h *Httclient
 
-			g.Before(func() { ts = NewFakeAPIServer() })
+			g.Before(func() { ts = NewFakeHTTPSServer() })
 			g.After(func() { ts.Close() })
 
 			g.BeforeEach(func() {
