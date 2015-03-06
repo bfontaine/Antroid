@@ -9,8 +9,8 @@ type Client struct {
 }
 
 // NewClient creates and returns a new API client.
-func NewClient() (Client, error) {
-	return Client{
+func NewClient() (*Client, error) {
+	return &Client{
 		http: NewHTTClient(),
 	}, nil
 }
