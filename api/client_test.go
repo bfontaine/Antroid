@@ -38,7 +38,7 @@ func TestClient(t *testing.T) {
 		var c *Client
 
 		g.BeforeEach(func() {
-			ts = NewFakeHTTPSServer()
+			ts = NewFakeAPIServer()
 			c, _ = NewClient()
 			c.http.baseURL = ts.URL
 		})
@@ -46,13 +46,27 @@ func TestClient(t *testing.T) {
 		g.AfterEach(func() { ts.Close() })
 
 		g.Describe(".getUserCredentialsParams", func() {
-			// TODO
+			g.It("Should initially return an empty UserCredentialsParams", func() {
+				p := UserCredentialsParams{}
+				o.Expect(c.getUserCredentialsParams()).To(o.Equal(p))
+			})
+
+			g.It("Should return an UserCredentialsParams w/ username/password", func() {
+				c.username = "foo"
+				c.password = "secret"
+				p := UserCredentialsParams{Login: "foo", Password: "secret"}
+				o.Expect(c.getUserCredentialsParams()).To(o.Equal(p))
+			})
 		})
 
 		g.Describe(".Authenticated", func() {
 			g.It("Should be initially false", func() {
 				o.Expect(c.Authenticated()).To(o.BeFalse())
 			})
+		})
+
+		g.Describe(".APIInfo", func() {
+			// TODO
 		})
 	})
 }
