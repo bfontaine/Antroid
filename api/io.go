@@ -106,6 +106,10 @@ func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 		return
 	}
 
+	// TODO partially parse the body to extract the status string and return
+	// the response, using json.RawMessage
+	// cf: http://attilaolah.eu/2013/11/29/json-decoding-in-go/
+
 	b.Content = res.Body
 	b.StatusCode = res.StatusCode
 
