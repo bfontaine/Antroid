@@ -103,7 +103,12 @@ func (cl *Client) Logout() (err error) {
 		return
 	}
 
-	return b.ensureEmptyResponse()
+	if err = b.ensureEmptyResponse(); err != nil {
+		return
+	}
+
+	cl.authenticated = false
+	return
 }
 
 // CreateGame creates a new game and returns it.
