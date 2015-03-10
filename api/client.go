@@ -63,9 +63,7 @@ func (cl *Client) LoginWithCredentials(username, password string) error {
 			return nil
 		}
 
-		if err := cl.Logout(); err != nil {
-			return err
-		}
+		cl.Logout()
 	}
 
 	cl.username = username
@@ -103,11 +101,10 @@ func (cl *Client) Logout() (err error) {
 		return
 	}
 
-	if err = b.ensureEmptyResponse(); err != nil {
-		return
+	if err = b.ensureEmptyResponse(); err == nil {
+		cl.authenticated = false
 	}
 
-	cl.authenticated = false
 	return
 }
 
