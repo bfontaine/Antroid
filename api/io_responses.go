@@ -1,54 +1,30 @@
 package api
 
 import (
-	"github.com/franela/goreq"
+	"encoding/json"
 )
 
 /*
    This file defines structures used to unmarshal JSON responses from the API.
 */
 
-type simpleResponse struct {
+type baseResponse struct {
 	Status   string
-	Response struct {
-		Error_code int
-		Error_msg  string
-
-		// used for game creation
-		Identifier string
-
-		// used for whoami calls
-		Status string
-	}
+	Response json.RawMessage
 }
 
-func (r simpleResponse) IsError() bool {
-	return r.Status == "error"
+type errorResponse struct {
+	Code    int    `json:"error_code"`
+	Message string `json:"error_msg"`
 }
 
-func (r simpleResponse) Error() error {
-	if !r.IsError() {
-		return nil
-	}
-	return errorForCode(r.Response.Error_code)
-}
-
-type apiInfoResponse struct {
-	Status   string
-	Response APIInfo
-}
-
-type gamesResponse struct {
-	Status   string
-	Response struct {
-		// FIXME we don't know the format returned by the API right now
-		Games []interface{}
-	}
+func (e errorResponse) Error() error {
+	return errorForCode(e.Code)
 }
 
 // Body is a body response from the API
 type Body struct {
-	Content    *goreq.Body
+	Content    *json.RawMessage
 	StatusCode int
 	err        error
 }
@@ -71,22 +47,21 @@ func (b Body) Error() (err error) {
 	return
 }
 
-// FromJSONTo assumes the body contains JSON and dumps it in the given struct
-func (b Body) FromJSONTo(target interface{}) (err error) {
-	err = b.Error()
-
-	if err == nil {
-		err = b.Content.FromJsonTo(&target)
+func (b Body) DumpTo(data interface{}) error {
+	if err := b.Error(); err != nil {
+		return err
+	}
+	if b.IsEmpty() {
+		return ErrEmptyBody
 	}
 
-	return
+	return json.Unmarshal(*b.Content, data)
 }
 
-// Close closes the body if it's not empty
-func (b Body) Close() (err error) {
-	if !b.IsEmpty() {
-		err = b.Content.Close()
-	}
+func (b Body) JSONString() string {
+	return string(*b.Content)
+}
 
-	return
+func (b Body) ensureEmptyResponse() error {
+	return b.DumpTo(&struct{}{})
 }

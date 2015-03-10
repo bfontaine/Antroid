@@ -31,24 +31,11 @@ func (cl *Client) Authenticated() bool {
 func (cl *Client) APIInfo() (info APIInfo, err error) {
 	body := cl.http.CallAPI()
 
-	if err = body.Error(); err != nil {
-		return
+	if err = body.Error(); err == nil {
+		err = body.DumpTo(&info)
 	}
 
-	defer body.Close()
-
-	var resp apiInfoResponse
-
-	if err = body.FromJSONTo(&resp); err != nil {
-		return
-	}
-
-	if resp.Status != "completed" {
-		err = ErrUnknown
-		return
-	}
-
-	return resp.Response, nil
+	return
 }
 
 // RegisterWithCredentials registers some credentials for this client
@@ -62,15 +49,7 @@ func (cl *Client) RegisterWithCredentials(username, password string) error {
 		return err
 	}
 
-	defer body.Close()
-
-	var resp simpleResponse
-
-	if err := body.FromJSONTo(&resp); err != nil {
-		return err
-	}
-
-	return resp.Error()
+	return body.ensureEmptyResponse()
 }
 
 // LoginWithCredentials authenticates the client with the given credentials.
@@ -107,32 +86,24 @@ func (cl *Client) Login() (err error) {
 		return
 	}
 
-	defer body.Close()
-
-	var resp simpleResponse
-
-	if err = body.FromJSONTo(&resp); err != nil {
-		return
-	}
-
-	if resp.IsError() {
-		err = resp.Error()
-	}
-
-	return
+	return body.ensureEmptyResponse()
 }
 
 // Logout the client.
 // If the client wasn't already authenticated the method returns without
 // failing.
 func (cl *Client) Logout() (err error) {
-	if cl.authenticated {
-		b := cl.http.CallLogout()
-
-		return b.Error()
+	if !cl.authenticated {
+		return
 	}
 
-	return
+	b := cl.http.CallLogout()
+
+	if err = b.Error(); err != nil {
+		return
+	}
+
+	return b.ensureEmptyResponse()
 }
 
 // CreateGame creates a new game and returns it.
@@ -143,21 +114,14 @@ func (cl *Client) CreateGame(gs *GameSpec) (g Game, err error) {
 		return
 	}
 
-	defer body.Close()
+	var resp struct{ Identifier string }
 
-	var resp simpleResponse
-
-	if err = body.FromJSONTo(&resp); err != nil {
-		return
-	}
-
-	if resp.IsError() {
-		err = resp.Error()
+	if err = body.DumpTo(&resp); err != nil {
 		return
 	}
 
 	g.Spec = gs
-	g.Identifier = GameID(resp.Response.Identifier)
+	g.Identifier = GameID(resp.Identifier)
 
 	return
 }
@@ -187,14 +151,9 @@ func (cl *Client) ListGames() (games []Game, err error) {
 		return
 	}
 
-	defer body.Close()
+	var resp struct{ Games []Game }
 
-	var resp gamesResponse
-
-	body.FromJSONTo(&resp)
-
-	if resp.Status != "completed" {
-		err = ErrUnknown
+	if err = body.DumpTo(&resp); err != nil {
 		return
 	}
 
@@ -264,15 +223,14 @@ func (cl *Client) WhoAmI() (s string, err error) {
 		return
 	}
 
-	defer body.Close()
+	var resp struct{ Status string }
 
-	var resp simpleResponse
-
-	if err = body.FromJSONTo(&resp); err != nil {
+	if err = body.DumpTo(&resp); err != nil {
 		return
 	}
 
-	st := resp.Response.Status
+	st := resp.Status
+
 	cl.authenticated = (st != "" && st != "not_logged")
 
 	if !cl.authenticated {
@@ -280,6 +238,6 @@ func (cl *Client) WhoAmI() (s string, err error) {
 		return
 	}
 
-	s = resp.Response.Status[whoAmILoginSlice:]
+	s = st[whoAmILoginSlice:]
 	return
 }

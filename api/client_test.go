@@ -167,9 +167,9 @@ func TestClient(t *testing.T) {
 				m1, m2 := info.Doc["m1"], info.Doc["m2"]
 
 				o.Expect(m1).To(o.Equal(APIMethod{
-					Verb:   "post",
-					Input:  []string{"i1 : string", "i2 : string"},
-					Output: []string{},
+					Verb:  "post",
+					Input: []string{"i1 : string", "i2 : string"},
+					//Output: []string{},
 					Errors: []APIError{
 						APIError{Code: 332299703,
 							Description: "USER_ALREADY_EXISTS"},
@@ -180,9 +180,9 @@ func TestClient(t *testing.T) {
 				}))
 
 				o.Expect(m2).To(o.Equal(APIMethod{
-					Verb:        "get",
-					Input:       []string{},
-					Output:      []string{"foo : string"},
+					Verb:  "get",
+					Input: []string{},
+					//Output:      []string{"foo : string"},
 					Errors:      []APIError{},
 					Description: "Do something else",
 				}))
@@ -196,7 +196,7 @@ func TestClient(t *testing.T) {
 				o.Expect(err).To(o.BeNil())
 			})
 
-			g.It("Should return an error if the username already exists", func() {
+			g.It("Should return an ErrUserAlreadyExists if the username already exists", func() {
 				err1 := c.RegisterWithCredentials("foo", "bar")
 				err2 := c.RegisterWithCredentials("foo", "qux")
 

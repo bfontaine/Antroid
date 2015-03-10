@@ -9,6 +9,10 @@ import (
 	"testing"
 )
 
+func writeJSONMessage(w http.ResponseWriter, s string) {
+	fmt.Fprintf(w, `{"status":"completed","response":"%s"}`, s)
+}
+
 func NewFakeHTTPSServer() *httptest.Server {
 	return httptest.NewTLSServer(http.HandlerFunc(func(
 		w http.ResponseWriter, r *http.Request) {
@@ -21,22 +25,21 @@ func NewFakeHTTPSServer() *httptest.Server {
 		switch path {
 		case "/0/method":
 			w.WriteHeader(200)
-			fmt.Fprint(w, fmt.Sprintf("%v %v", method, path))
+			writeJSONMessage(w, fmt.Sprintf("%v %v", method, path))
 
 		case "/0/idontexist":
 			w.WriteHeader(404)
-			fmt.Fprint(w, "nope")
+			writeJSONMessage(w, "nope")
 
 		case "/0/geturlparams":
 			if method == "GET" {
 				w.WriteHeader(200)
-				fmt.Fprint(w, fmt.Sprintf("%v %s", method, r.Form.Encode()))
+				writeJSONMessage(w, fmt.Sprintf("%v %s", method, r.Form.Encode()))
 			}
 
 		case "/0/getpostparams":
 			if method == "POST" {
-				w.WriteHeader(200)
-				fmt.Fprint(w, fmt.Sprintf("%v %s", method, r.PostForm.Encode()))
+				writeJSONMessage(w, fmt.Sprintf("%v %s", method, r.PostForm.Encode()))
 			}
 
 			// API URLs. We don't mock the API here since we're only testing
@@ -60,7 +63,7 @@ func NewFakeHTTPSServer() *httptest.Server {
 			"/0/auth":
 
 			w.WriteHeader(200)
-			fmt.Fprint(w, fmt.Sprintf("%v %s %s", method, path, r.Form.Encode()))
+			writeJSONMessage(w, fmt.Sprintf("%v %s %s", method, path, r.Form.Encode()))
 		}
 	}))
 }
@@ -136,7 +139,7 @@ func TestIO(t *testing.T) {
 				o.Expect(b.Error()).To(o.BeNil())
 				o.Expect(b.IsEmpty()).To(o.BeFalse())
 				o.Expect(b.StatusCode).To(o.Equal(200))
-				o.Expect(b.Content.ToString()).To(o.Equal("GET /0/method"))
+				o.Expect(b.JSONString()).To(o.Equal(`"GET /0/method"`))
 			})
 
 			g.It("Should use POST if it was given as the method", func() {
@@ -146,7 +149,7 @@ func TestIO(t *testing.T) {
 				o.Expect(b.Error()).To(o.BeNil())
 				o.Expect(b.IsEmpty()).To(o.BeFalse())
 				o.Expect(b.StatusCode).To(o.Equal(200))
-				o.Expect(b.Content.ToString()).To(o.Equal("POST /0/method"))
+				o.Expect(b.JSONString()).To(o.Equal(`"POST /0/method"`))
 			})
 
 			g.It("Should set body.err to Err4XX if the status code is 4XX", func() {
@@ -166,7 +169,7 @@ func TestIO(t *testing.T) {
 				o.Expect(b.Error()).To(o.BeNil())
 				o.Expect(b.IsEmpty()).To(o.BeFalse())
 				o.Expect(b.StatusCode).To(o.Equal(200))
-				o.Expect(b.Content.ToString()).To(o.Equal("GET param=foo"))
+				o.Expect(b.JSONString()).To(o.Equal(`"GET param=foo"`))
 			})
 
 			g.It("Should send parameters in the body for POST requests", func() {
@@ -178,7 +181,7 @@ func TestIO(t *testing.T) {
 				o.Expect(b.Error()).To(o.BeNil())
 				o.Expect(b.IsEmpty()).To(o.BeFalse())
 				o.Expect(b.StatusCode).To(o.Equal(200))
-				o.Expect(b.Content.ToString()).To(o.Equal("POST param=foo"))
+				o.Expect(b.JSONString()).To(o.Equal(`"POST param=foo"`))
 			})
 		})
 
@@ -201,7 +204,7 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal("GET /0/api "))
+					o.Expect(b.JSONString()).To(o.Equal(`"GET /0/api "`))
 				})
 			})
 
@@ -215,8 +218,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"POST /0/auth login=foo&password=bar"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"POST /0/auth login=foo&password=bar"`))
 				})
 			})
 
@@ -237,12 +240,12 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"GET /0/create " +
+					o.Expect(b.JSONString()).To(o.Equal(
+						"\"GET /0/create " +
 							"initial_acid=35&initial_energy=40" +
 							"&minimal_nb_player=1&nb_ant_per_player=2" +
 							"&nb_player=1&nb_turn=34&pace=12&teaser=desc" +
-							"&users=foo"))
+							"&users=foo\""))
 				})
 			})
 
@@ -253,8 +256,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"GET /0/destroy id=foobar"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"GET /0/destroy id=foobar"`))
 				})
 			})
 
@@ -265,7 +268,7 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal("GET /0/games "))
+					o.Expect(b.JSONString()).To(o.Equal(`"GET /0/games "`))
 				})
 			})
 
@@ -276,8 +279,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"GET /0/join id=foobar1"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"GET /0/join id=foobar1"`))
 				})
 			})
 			g.Describe("CallLog", func() {
@@ -287,8 +290,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"GET /0/log id=foobar42"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"GET /0/log id=foobar42"`))
 				})
 			})
 
@@ -299,7 +302,7 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal("GET /0/logout "))
+					o.Expect(b.JSONString()).To(o.Equal(`"GET /0/logout "`))
 				})
 			})
 
@@ -310,8 +313,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"GET /0/play cmds=xyz&id=a"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"GET /0/play cmds=xyz&id=a"`))
 				})
 			})
 
@@ -325,8 +328,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"POST /0/register login=foo1&password=bar"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"POST /0/register login=foo1&password=bar"`))
 				})
 			})
 
@@ -337,8 +340,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"GET /0/shutdown id=abc"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"GET /0/shutdown id=abc"`))
 				})
 			})
 
@@ -349,8 +352,8 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal(
-						"GET /0/status id=f42"))
+					o.Expect(b.JSONString()).To(o.Equal(
+						`"GET /0/status id=f42"`))
 				})
 			})
 
@@ -361,7 +364,7 @@ func TestIO(t *testing.T) {
 					o.Expect(b).NotTo(o.BeNil())
 					o.Expect(b.Error()).To(o.BeNil())
 					o.Expect(b.StatusCode).To(o.Equal(200))
-					o.Expect(b.Content.ToString()).To(o.Equal("GET /0/whoami "))
+					o.Expect(b.JSONString()).To(o.Equal(`"GET /0/whoami "`))
 				})
 			})
 		})

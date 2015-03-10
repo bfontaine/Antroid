@@ -106,15 +106,35 @@ func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 		return
 	}
 
-	// TODO partially parse the body to extract the status string and return
-	// the response, using json.RawMessage
-	// cf: http://attilaolah.eu/2013/11/29/json-decoding-in-go/
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
 
-	b.Content = res.Body
-	b.StatusCode = res.StatusCode
-
-	if b.StatusCode != 200 {
+	if b.StatusCode = res.StatusCode; b.StatusCode != 200 {
 		b.err = getError(b.StatusCode)
+		return
+	}
+
+	var resp baseResponse
+
+	if b.err = res.Body.FromJsonTo(&resp); b.err != nil {
+		return
+	}
+
+	b.Content = &resp.Response
+
+	switch resp.Status {
+	case "completed":
+		// nothing here, everything's fine
+	case "error":
+		var errorResp errorResponse
+
+		if b.err = b.DumpTo(&errorResp); b.err == nil {
+			b.err = errorResp.Error()
+		}
+
+	default:
+		b.err = ErrUnknown
 	}
 
 	return

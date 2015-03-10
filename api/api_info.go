@@ -15,7 +15,9 @@ type APIMethod struct {
 	// A list of the stuff we need to pass to the method
 	Input []string
 	// A list of what is returned
-	Output []string
+	// The API is broken here, see
+	// https://groups.google.com/forum/#!topic/pcomp15/qSJAm0924Ko
+	//Output []string
 	// The possible errors
 	Errors []APIError
 	// An human-readable description of this method
