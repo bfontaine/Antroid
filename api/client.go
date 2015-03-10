@@ -153,14 +153,18 @@ func (cl *Client) ListGames() (games []Game, err error) {
 		return
 	}
 
-	var resp struct{ Games []Game }
+	var resp struct {
+		Games []struct{ Game_description Game }
+	}
 
 	if err = body.DumpTo(&resp); err != nil {
 		return
 	}
 
-	//return resp.Response.Games, nil
-	err = ErrNotImplemented
+	for _, g := range resp.Games {
+		games = append(games, g.Game_description)
+	}
+
 	return
 }
 
