@@ -5,6 +5,10 @@ check: deps
 	go vet ./...
 	go test -v -cover ./...
 
+covercheck: deps
+	go test -covermode=count -coverprofile=count.out ./api
+	go tool cover -html=count.out
+
 lint: deps
 	golint ./...
 

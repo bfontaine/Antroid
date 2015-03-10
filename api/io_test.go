@@ -87,6 +87,12 @@ func TestIO(t *testing.T) {
 		g.It("Should return an Err5XX if the code is 5XX", func() {
 			o.Expect(getError(500)).To(o.Equal(Err5XX))
 		})
+
+		g.It("Should return nil if the code isn't in the errors range", func() {
+			o.Expect(getError(-2)).To(o.BeNil())
+			o.Expect(getError(42)).To(o.BeNil())
+			o.Expect(getError(9000)).To(o.BeNil())
+		})
 	})
 
 	g.Describe("Httclient", func() {
@@ -100,6 +106,27 @@ func TestIO(t *testing.T) {
 			g.BeforeEach(func() {
 				h = NewHTTClient()
 				h.baseURL = ts.URL
+			})
+
+			g.It("Should set body.err if it can't serialize POST params", func() {
+				n := 42
+				b := h.call(post, "/idontexist", &n)
+				o.Expect(b).NotTo(o.BeNil())
+
+				err := b.Error()
+
+				o.Expect(err).NotTo(o.BeNil())
+				o.Expect(err).NotTo(o.Equal(Err4XX))
+			})
+
+			g.It("Should set body.err if it can't serialize GET params", func() {
+				b := h.call(get, "/idontexist", 42)
+				o.Expect(b).NotTo(o.BeNil())
+
+				err := b.Error()
+
+				o.Expect(err).NotTo(o.BeNil())
+				o.Expect(err).NotTo(o.Equal(Err4XX))
 			})
 
 			g.It("Should call the remote server", func() {
