@@ -44,10 +44,12 @@ type intRange struct {
 	max int
 }
 
+// IntRange creates a new intRange
 func IntRange(min, max int) intRange {
 	return intRange{min: min, max: max}
 }
 
+// Include checks if an int is included in the range
 func (r intRange) Include(n int) bool {
 	return r.min <= n && n <= r.max
 }

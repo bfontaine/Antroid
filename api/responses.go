@@ -47,6 +47,7 @@ func (b Body) Error() (err error) {
 	return
 }
 
+// DumpTo takes a pointer to a struct and dumps the body in it
 func (b Body) DumpTo(data interface{}) error {
 	if err := b.Error(); err != nil {
 		return err
@@ -58,10 +59,12 @@ func (b Body) DumpTo(data interface{}) error {
 	return json.Unmarshal(*b.Content, data)
 }
 
+// JSONString returns a JSON string for this body
 func (b Body) JSONString() string {
 	return string(*b.Content)
 }
 
+// ensureEmptyResponse tries to parse the body as an empty JSON object
 func (b Body) ensureEmptyResponse() error {
 	return b.DumpTo(&struct{}{})
 }
