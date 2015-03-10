@@ -339,5 +339,12 @@ func TestClient(t *testing.T) {
 				o.Expect(c.authenticated).To(o.BeFalse())
 			})
 		})
+
+		g.Describe(".ShutdownIdentifier(id)", func() {
+			g.It("Should return ErrNotImplemented", func() {
+				o.Expect(c.ShutdownIdentifier("foo")).
+					To(o.Equal(ErrNotImplemented))
+			})
+		})
 	})
 }

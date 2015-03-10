@@ -192,13 +192,7 @@ func (cl *Client) Play(g *Game, cmds []*Command) error {
 // ShutdownIdentifier shutdowns a server (need to be root). We don't know
 // what's this id for.
 func (cl *Client) ShutdownIdentifier(id string) error {
-	if !cl.authenticated {
-		return ErrNoPerm
-	}
-
-	body := cl.http.CallShutdown(GenericIDParams{ID: id})
-
-	return body.Error()
+	return ErrNotImplemented
 }
 
 // GetGameStatus returns a game's status
