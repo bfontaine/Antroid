@@ -21,6 +21,7 @@ var (
 	ErrNotLogged         = errors.New("Must be logged")
 	ErrWrongCmd          = errors.New("Invalid command")
 	ErrGameNotPlaying    = errors.New("The game is not playing")
+	ErrInvalidLogin      = errors.New("Invalid login")
 
 	ErrEmptyBody      = errors.New("Unexpected empty response body")
 	ErrUnknown        = errors.New("Unknown error")
@@ -33,19 +34,20 @@ var (
 
 // See the API spec
 var errorCodes = map[int]error{
-	61760457:   ErrWrongCmd,
-	91411898:   ErrNoMoreSlot,
-	351345662:  ErrNoPerm,
-	427619750:  ErrWrongGame,
-	448649162:  ErrGameNotPlaying,
-	565287715:  ErrAlreadyJoined,
-	591603053:  ErrInvalidArgument,
-	693680202:  ErrUnknownUser,
-	813909381:  ErrMustJoin,
+	202165063:  ErrUnknownUser,
+	203624157:  ErrAlreadyJoined,
+	285625267:  ErrWrongCmd,
 	332299703:  ErrUserAlreadyExists,
-	942350302:  ErrWrongAnt,
-	965395831:  ErrGameNotOver,
-	1058501022: ErrNotLogged,
+	415302510:  ErrNotLogged,
+	476360830:  ErrInvalidArgument,
+	591857505:  ErrWrongAnt,
+	598240942:  ErrGameNotOver,
+	621433138:  ErrInvalidLogin,
+	683983482:  ErrMustJoin,
+	761507830:  ErrNoMoreSlot,
+	796193025:  ErrWrongGame,
+	816934054:  ErrGameNotPlaying,
+	1032614003: ErrNoPerm,
 }
 
 func errorForCode(code int) (err error) {
