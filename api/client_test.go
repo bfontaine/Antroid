@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/franela/goblin"
 	o "github.com/onsi/gomega"
 	"net/http"
@@ -12,10 +13,38 @@ func NewFakeAPIServer() *httptest.Server {
 	return httptest.NewTLSServer(http.HandlerFunc(func(
 		w http.ResponseWriter, r *http.Request) {
 
-		//method := r.Method
-		//path := r.URL.Path
+		route := fmt.Sprintf("%s %s", r.Method, r.URL.Path)
 
 		r.ParseForm()
+
+		switch route {
+		case "GET /0/api":
+			w.WriteHeader(200)
+			fmt.Fprint(w, `{
+              "status": "completed",
+              "response": {
+              "doc": {
+                "m1": {
+                  "method": "post",
+                  "input": [ "i1 : string", "i2 : string" ],
+                  "output": [],
+                  "errors": [
+                    { "code": 332299703, "description": "USER_ALREADY_EXISTS" },
+                    { "code": 621433138, "description": "INVALID_LOGIN" }
+                  ],
+                  "description": "Do something"
+                },
+                "m2": {
+                  "method": "get",
+                  "input": [],
+                  "output": [ "foo : string" ],
+                  "errors": [],
+                  "description": "Do something else"
+                }
+              }
+            }
+          }`)
+		}
 
 		// TODO mock the API
 	}))
@@ -66,6 +95,46 @@ func TestClient(t *testing.T) {
 		})
 
 		g.Describe(".APIInfo", func() {
+			g.It("Should return API infos", func() {
+				info, err := c.APIInfo()
+
+				o.Expect(err).To(o.BeNil())
+				o.Expect(info).NotTo(o.BeNil())
+				o.Expect(info.Doc).NotTo(o.BeNil())
+			})
+
+			g.It("Should populate .Doc with all methods", func() {
+				info, err := c.APIInfo()
+
+				o.Expect(err).To(o.BeNil())
+				o.Expect(info).NotTo(o.BeNil())
+				o.Expect(info.Doc).NotTo(o.BeNil())
+				o.Expect(len(info.Doc)).To(o.Equal(2))
+
+				m1, m2 := info.Doc["m1"], info.Doc["m2"]
+
+				o.Expect(m1).To(o.Equal(APIMethod{
+					Verb:   "post",
+					Input:  []string{"i1 : string", "i2 : string"},
+					Output: []string{},
+					Errors: []APIError{
+						APIError{Code: 332299703,
+							Description: "USER_ALREADY_EXISTS"},
+						APIError{Code: 621433138,
+							Description: "INVALID_LOGIN"},
+					},
+					Description: "Do something",
+				}))
+
+				o.Expect(m2).To(o.Equal(APIMethod{
+					Verb:        "get",
+					Input:       []string{},
+					Output:      []string{"foo : string"},
+					Errors:      []APIError{},
+					Description: "Do something else",
+				}))
+			})
+
 			// TODO
 		})
 	})

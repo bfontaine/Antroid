@@ -48,9 +48,7 @@ func (cl *Client) APIInfo() (info APIInfo, err error) {
 		return
 	}
 
-	info = resp.Response
-
-	return
+	return resp.Response, nil
 }
 
 // RegisterWithCredentials registers some credentials for this client

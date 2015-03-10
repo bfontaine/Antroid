@@ -11,7 +11,7 @@ type APIError struct {
 // APIMethod represents an API method
 type APIMethod struct {
 	// The HTTP verb to use for this method
-	Verb string `url:"method"`
+	Verb string `json:"method"`
 	// A list of the stuff we need to pass to the method
 	Input []string
 	// A list of what is returned
