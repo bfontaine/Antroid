@@ -52,9 +52,6 @@ func (b Body) DumpTo(data interface{}) error {
 	if err := b.Error(); err != nil {
 		return err
 	}
-	if b.IsEmpty() {
-		return ErrEmptyBody
-	}
 
 	return json.Unmarshal(*b.Content, data)
 }

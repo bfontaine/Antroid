@@ -39,8 +39,13 @@ func NewFakeHTTPSServer() *httptest.Server {
 
 		case "/0/getpostparams":
 			if method == "POST" {
+				w.WriteHeader(200)
 				writeJSONMessage(w, fmt.Sprintf("%v %s", method, r.PostForm.Encode()))
 			}
+
+		case "/0/wrongstatus":
+			w.WriteHeader(200)
+			fmt.Fprintf(w, `{"status":"yolo","response":"foo"}`)
 
 			// API URLs. We don't mock the API here since we're only testing
 			// the low-level stuff. The parsing tests will be done in
@@ -158,6 +163,13 @@ func TestIO(t *testing.T) {
 				o.Expect(b).NotTo(o.BeNil())
 				o.Expect(b.Error()).To(o.Equal(Err4XX))
 				o.Expect(b.StatusCode).To(o.Equal(404))
+			})
+
+			g.It("Should set body.err to ErrUnknown if the status is unknown", func() {
+				b := h.call(get, "/wrongstatus", nil)
+
+				o.Expect(b).NotTo(o.BeNil())
+				o.Expect(b.Error()).To(o.Equal(ErrUnknown))
 			})
 
 			g.It("Should send parameters in the URL for GET requests", func() {
