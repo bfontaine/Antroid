@@ -23,6 +23,7 @@ func main() {
 	apiMethods := flag.Bool("api-methods", false, "show all API methods")
 	whoAmI := flag.Bool("whoami", false, "verify that the user is logged")
 	gamesList := flag.Bool("games", false, "list all the visible games")
+	gameStatusId := flag.String("game-status", "", "get a game's status")
 
 	flag.Parse()
 
@@ -60,6 +61,16 @@ func main() {
 			for _, g := range games {
 				fmt.Printf("- %s\n", g)
 			}
+		}
+	}
+
+	if *gameStatusId != "" {
+		gId := api.GameID(*gameStatusId)
+
+		if gs, err := cl.GetGameIdentifierStatus(gId); err != nil {
+			exitErr(err)
+		} else {
+			fmt.Printf("%s\n", gs)
 		}
 	}
 

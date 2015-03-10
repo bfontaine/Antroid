@@ -65,3 +65,18 @@ func (b Body) JSONString() string {
 func (b Body) ensureEmptyResponse() error {
 	return b.DumpTo(&struct{}{})
 }
+
+type gameStatusResponse struct {
+	Creator        string
+	CreationDate   string `json:"creation_date"`
+	Teaser         string
+	Visibility     string
+	NbAntPerPlayer int `json:"nb_ant_per_player"`
+	Pace           int
+	InitialEnergy  int `json:"initial_energy"`
+	InitialAcid    int `json:"initial_acid"`
+	Players        []string
+	Score          map[string]int
+	Status         struct{ Status string }
+	Turn           int
+}

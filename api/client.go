@@ -202,13 +202,27 @@ func (cl *Client) ShutdownIdentifier(id string) error {
 // GetGameStatus returns a game's status
 // Note: the spec is unclear on the returned JSON so we can't set a return type
 // now.
-func (cl *Client) GetGameStatus(g *Game) error {
+func (cl *Client) GetGameStatus(g *Game) (*GameStatus, error) {
 	return cl.GetGameIdentifierStatus(g.Identifier)
 }
 
 // GetGameIdentifierStatus gets a game's status, given its identifier
-func (cl *Client) GetGameIdentifierStatus(id GameID) error {
-	return ErrNotImplemented
+func (cl *Client) GetGameIdentifierStatus(id GameID) (gs *GameStatus, err error) {
+	body := cl.http.CallStatus(GameIDParams{ID: id})
+
+	if err = body.Error(); err != nil {
+		return
+	}
+
+	var resp struct{ Status gameStatusResponse }
+
+	if err = body.DumpTo(&resp); err != nil {
+		return
+	}
+
+	gs = gameStatusFromResponse(id, resp.Status)
+
+	return
 }
 
 // number of characters we need to skip in /whoami's response to get our
