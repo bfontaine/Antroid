@@ -42,7 +42,7 @@ var errorCodes = map[int]error{
 	591603053:  ErrInvalidArgument,
 	693680202:  ErrUnknownUser,
 	813909381:  ErrMustJoin,
-	873213279:  ErrUserAlreadyExists,
+	332299703:  ErrUserAlreadyExists,
 	942350302:  ErrWrongAnt,
 	965395831:  ErrGameNotOver,
 	1058501022: ErrNotLogged,
