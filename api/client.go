@@ -45,10 +45,6 @@ func (cl *Client) RegisterWithCredentials(username, password string) error {
 
 	body := cl.http.CallRegister(cl.getUserCredentialsParams())
 
-	if err := body.Error(); err != nil {
-		return err
-	}
-
 	return body.ensureEmptyResponse()
 }
 
@@ -143,10 +139,6 @@ func (cl *Client) DestroyGame(g *Game) error {
 func (cl *Client) DestroyGameIdentifier(id GameID) (err error) {
 	body := cl.http.CallDestroy(GameIDParams{ID: id})
 
-	if err = body.Error(); err != nil {
-		return
-	}
-
 	return body.ensureEmptyResponse()
 }
 
@@ -180,7 +172,9 @@ func (cl *Client) JoinGame(g *Game) error {
 
 // JoinGameIdentifier makes the client join a game given its identifier.
 func (cl *Client) JoinGameIdentifier(id GameID) error {
-	return ErrNotImplemented
+	body := cl.http.CallJoin(GameIDParams{ID: id})
+
+	return body.ensureEmptyResponse()
 }
 
 // GetGameLog returns a game's log

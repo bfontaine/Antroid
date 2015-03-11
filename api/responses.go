@@ -61,9 +61,14 @@ func (b Body) JSONString() string {
 	return string(*b.Content)
 }
 
-// ensureEmptyResponse tries to parse the body as an empty JSON object
-func (b Body) ensureEmptyResponse() error {
-	return b.DumpTo(&struct{}{})
+// ensureEmptyResponse tries to parse the body as an empty JSON object. It'll
+// return an error if .Error() is non-nil
+func (b Body) ensureEmptyResponse() (err error) {
+	if err = b.Error(); err == nil {
+		err = b.DumpTo(&struct{}{})
+	}
+
+	return
 }
 
 type gameStatusResponse struct {

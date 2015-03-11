@@ -25,6 +25,7 @@ func main() {
 	gamesList := flag.Bool("games", false, "list all the visible games")
 	gameStatusId := flag.String("game-status", "", "get a game's status")
 	destroyId := flag.String("destroy", "", "destroy a game")
+	joinId := flag.String("join", "", "join a game")
 
 	createGame := flag.Bool("create", false, "create a game")
 
@@ -98,13 +99,22 @@ func main() {
 		}
 	}
 
+	if *joinId != "" {
+		gId := api.GameID(*joinId)
+
+		if err := cl.JoinGameIdentifier(gId); err != nil {
+			exitErr(err)
+		} else {
+			fmt.Printf("Game %s successfully joined\n", gId)
+		}
+	}
+
 	if *createGame {
 		if g, err := cl.CreateGame(&gs); err != nil {
 			exitErr(err)
 		} else {
 			fmt.Printf("Game %s successfully created\n", g.Identifier)
 		}
-
 	}
 
 	cl.Logout()
