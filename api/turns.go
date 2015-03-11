@@ -16,3 +16,11 @@ type Command struct {
 	Ant int
 	Cmd string
 }
+
+type Commands []Command
+
+type Turn struct {
+	Number int
+
+	// TODO observations, etc
+}

@@ -8,12 +8,6 @@ import (
 	"strings"
 )
 
-// just for tests
-const (
-	username = "ww"
-	password = "a"
-)
-
 func exitErr(e error) {
 	fmt.Printf("Error: %v\n", e)
 	os.Exit(1)
@@ -26,6 +20,9 @@ func main() {
 	gameStatusId := flag.String("game-status", "", "get a game's status")
 	destroyId := flag.String("destroy", "", "destroy a game")
 	joinId := flag.String("join", "", "join a game")
+
+	login := flag.String("login", "ww", "login")
+	passwd := flag.String("password", "a", "password")
 
 	createGame := flag.Bool("create", false, "create a game")
 
@@ -44,7 +41,7 @@ func main() {
 
 	cl, _ := api.NewClient()
 
-	if err := cl.LoginWithCredentials("ww", "a"); err != nil {
+	if err := cl.LoginWithCredentials(*login, *passwd); err != nil {
 		exitErr(err)
 	}
 

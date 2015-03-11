@@ -85,3 +85,8 @@ type gameStatusResponse struct {
 	Status         struct{ Status string }
 	Turn           int
 }
+
+type playResponse struct {
+	Turn         int
+	Observations []json.RawMessage
+}

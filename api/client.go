@@ -183,13 +183,40 @@ func (cl *Client) GetGameLog(g *Game) (GameLog, error) {
 }
 
 // GetGameIdentifierLog returns a game's log given its identifier
-func (cl *Client) GetGameIdentifierLog(id GameID) (GameLog, error) {
+func (cl *Client) GetGameIdentifierLog(id GameID) (gl GameLog, err error) {
+	body := cl.http.CallLog(GameIDParams{ID: id})
+
+	if err = body.Error(); err != nil {
+		return
+	}
+
+	// TODO
+
 	return GameLog{}, ErrNotImplemented
 }
 
 // Play a game with a list of commands
-func (cl *Client) Play(g *Game, cmds []*Command) error {
-	return ErrNotImplemented
+func (cl *Client) Play(g *Game, cmds Commands) (Turn, error) {
+	return cl.PlayIdentifier(g.Identifier, cmds)
+}
+
+// Play a game with a list of commands, given its identifier
+func (cl *Client) PlayIdentifier(id GameID, cmds Commands) (t Turn, err error) {
+	body := cl.http.CallPlay(PlayParams{ID: id, Cmds: cmds.String()})
+
+	if err = body.Error(); err != nil {
+		return
+	}
+
+	var resp playResponse
+
+	if err = body.DumpTo(&resp); err != nil {
+		return
+	}
+
+	// TODO
+
+	return
 }
 
 // ShutdownIdentifier shutdowns a server (need to be root). We don't know
