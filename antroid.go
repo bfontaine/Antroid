@@ -26,6 +26,19 @@ func main() {
 	gameStatusId := flag.String("game-status", "", "get a game's status")
 	destroyId := flag.String("destroy", "", "destroy a game")
 
+	createGame := flag.Bool("create", false, "create a game")
+
+	gs := api.GameSpec{Public: true}
+
+	flag.StringVar(&gs.Description, "description", "", "game description")
+	flag.IntVar(&gs.Pace, "pace", 1, "pace")
+	flag.IntVar(&gs.Turns, "turns", 1, "turns")
+	flag.IntVar(&gs.AntsPerPlayer, "ants", 1, "ants per player")
+	flag.IntVar(&gs.MaxPlayers, "max", 1, "max players")
+	flag.IntVar(&gs.MinPlayers, "min", 1, "min players")
+	flag.IntVar(&gs.InitialEnergy, "energy", 100, "initial energy")
+	flag.IntVar(&gs.InitialAcid, "acid", 100, "initial acid")
+
 	flag.Parse()
 
 	cl, _ := api.NewClient()
@@ -83,6 +96,15 @@ func main() {
 		} else {
 			fmt.Printf("Game %s successfully destroyed\n", gId)
 		}
+	}
+
+	if *createGame {
+		if g, err := cl.CreateGame(&gs); err != nil {
+			exitErr(err)
+		} else {
+			fmt.Printf("Game %s successfully created\n", g.Identifier)
+		}
+
 	}
 
 	cl.Logout()
