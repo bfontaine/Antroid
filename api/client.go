@@ -132,17 +132,22 @@ func (cl *Client) CreateGame(gs *GameSpec) (g Game, err error) {
 // If the method is successful it'll modify the game in-place and reset its
 // identifier.
 func (cl *Client) DestroyGame(g *Game) error {
-	if err := cl.DestroyGameIndentifier(g.Identifier); err != nil {
+	if err := cl.DestroyGameIdentifier(g.Identifier); err != nil {
 		return err
 	}
 	g.Identifier = ""
 	return nil
 }
 
-// DestroyGameIndentifier destroys a game given its identifier.
-func (cl *Client) DestroyGameIndentifier(id GameID) error {
-	// TODO
-	return ErrNotImplemented
+// DestroyGameIdentifier destroys a game given its identifier.
+func (cl *Client) DestroyGameIdentifier(id GameID) (err error) {
+	body := cl.http.CallDestroy(GameIDParams{ID: id})
+
+	if err = body.Error(); err != nil {
+		return
+	}
+
+	return body.ensureEmptyResponse()
 }
 
 // ListGames lists all visible games.

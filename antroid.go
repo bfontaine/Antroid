@@ -24,6 +24,7 @@ func main() {
 	whoAmI := flag.Bool("whoami", false, "verify that the user is logged")
 	gamesList := flag.Bool("games", false, "list all the visible games")
 	gameStatusId := flag.String("game-status", "", "get a game's status")
+	destroyId := flag.String("destroy", "", "destroy a game")
 
 	flag.Parse()
 
@@ -71,6 +72,16 @@ func main() {
 			exitErr(err)
 		} else {
 			fmt.Printf("%s\n", gs)
+		}
+	}
+
+	if *destroyId != "" {
+		gId := api.GameID(*destroyId)
+
+		if err := cl.DestroyGameIdentifier(gId); err != nil {
+			exitErr(err)
+		} else {
+			fmt.Printf("Game %s successfully destroyed\n", gId)
 		}
 	}
 
