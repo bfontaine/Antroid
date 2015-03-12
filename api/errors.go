@@ -35,8 +35,8 @@ var (
 // See the API spec
 var errorCodes = map[int]error{
 	202165063:  ErrUnknownUser,
-	203624157:  ErrAlreadyJoined,
 	285625267:  ErrWrongCmd,
+	306276868:  ErrAlreadyJoined,
 	332299703:  ErrUserAlreadyExists,
 	415302510:  ErrNotLogged,
 	591857505:  ErrWrongAnt,
