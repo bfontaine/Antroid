@@ -3,24 +3,16 @@ package api
 // Commands is a comma-separated list of commands we give to an ant
 type Commands string
 
-// Position is a map position
-type Position struct {
-	X int
-	Y int
-}
+// Combine returns a new PartialMap that is the combination of the first one
+// and all the others
+func (pm PartialMap) Combine(maps ...PartialMap) PartialMap {
+	for _, m := range maps {
+		for p, c := range m.Cells {
+			pm.Cells[p] = c
+		}
+	}
 
-// A Direction is just a position with offsets instead of absolute variables
-type Direction Position
-
-// Cell is a positioned cell
-type Cell struct {
-	Pos     Position
-	Content string
-}
-
-// PartialMap is a part of a map
-type PartialMap struct {
-	Cells []Cell
+	return pm
 }
 
 // BasicAntStatus describes an ant from which we don't know much info

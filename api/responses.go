@@ -103,7 +103,10 @@ type antResponse struct {
 
 type cellResponse struct {
 	X, Y    int
-	Content struct{ Kind string }
+	Content struct {
+		Kind  string
+		Level string
+	}
 }
 
 type mapResponse []cellResponse
@@ -132,13 +135,22 @@ func (p playResponse) getTurn() (t *Turn, err error) {
 			return
 		}
 
-		pmap := PartialMap{Cells: []Cell{}}
+		pmap := PartialMap{Cells: make(map[Position]*Cell)}
 
 		for _, cell := range mapResp {
-			pmap.Cells = append(pmap.Cells, Cell{
-				Pos:     Position{X: cell.X, Y: cell.Y},
-				Content: cell.Content.Kind,
-			})
+			p := Position{X: cell.X, Y: cell.Y}
+
+			content := cell.Content.Kind
+			if cell.Content.Level != "" {
+				// the food is represented as a content "food" with a level:
+				// "meat", "sugar", etc.
+				content = cell.Content.Level
+			}
+
+			pmap.Cells[p] = &Cell{
+				Pos:     p,
+				Content: content,
+			}
 		}
 
 		ants := []BasicAntStatus{}
