@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"fmt"
 )
 
@@ -16,18 +15,14 @@ func (g GameStatus) String() string {
 }
 
 func (cmd Command) String() string {
-	return fmt.Sprintf("%d:%s", cmd.Ant, cmd.Cmd)
+	return string(cmd)
 }
 
 func (cmds Commands) String() string {
-	var buf bytes.Buffer
+	return string(cmds)
+}
 
-	for i, cmd := range cmds {
-		if i > 0 {
-			buf.WriteString(",")
-		}
-		buf.WriteString(cmd.String())
-	}
-
-	return buf.String()
+func (resp baseResponse) String() string {
+	return fmt.Sprintf(`{"status": "%s", "response": %s}`,
+		resp.Status, resp.Response)
 }

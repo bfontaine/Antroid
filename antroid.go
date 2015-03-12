@@ -14,20 +14,23 @@ func exitErr(e error) {
 }
 
 func main() {
-	apiMethods := flag.Bool("api-methods", false, "show all API methods")
+	apiMethods := flag.Bool("methods", false, "show all API methods")
 	whoAmI := flag.Bool("whoami", false, "verify that the user is logged")
 	gamesList := flag.Bool("games", false, "list all the visible games")
-	gameStatusId := flag.String("game-status", "", "get a game's status")
+	createGame := flag.Bool("create", false, "create a game")
+
+	// flags with game ids
+	gameStatusId := flag.String("status", "", "get a game's status")
 	destroyId := flag.String("destroy", "", "destroy a game")
 	joinId := flag.String("join", "", "join a game")
+	playId := flag.String("play", "", "play a game")
 
-	login := flag.String("login", "ww", "login")
-	passwd := flag.String("password", "a", "password")
-
-	createGame := flag.Bool("create", false, "create a game")
+	// -play options
+	playCmds := flag.String("cmds", "", "play with this commands")
 
 	gs := api.GameSpec{Public: true}
 
+	// -create options
 	flag.StringVar(&gs.Description, "description", "", "game description")
 	flag.IntVar(&gs.Pace, "pace", 1, "pace")
 	flag.IntVar(&gs.Turns, "turns", 1, "turns")
@@ -37,9 +40,17 @@ func main() {
 	flag.IntVar(&gs.InitialEnergy, "energy", 100, "initial energy")
 	flag.IntVar(&gs.InitialAcid, "acid", 100, "initial acid")
 
+	// general options
+	login := flag.String("login", "ww", "login")
+	passwd := flag.String("password", "a", "password")
+
+	debug := flag.Bool("debug", false, "debug mode")
+
 	flag.Parse()
 
 	cl, _ := api.NewClient()
+
+	cl.SetDebug(*debug)
 
 	if err := cl.LoginWithCredentials(*login, *passwd); err != nil {
 		exitErr(err)
@@ -111,6 +122,14 @@ func main() {
 			exitErr(err)
 		} else {
 			fmt.Printf("Game %s successfully created\n", g.Identifier)
+		}
+	}
+
+	if *playId != "" {
+		if t, err := cl.PlayIdentifier(api.GameID(*playId), api.Commands(*playCmds)); err != nil {
+			exitErr(err)
+		} else {
+			fmt.Printf("Turn: %s\n", t)
 		}
 	}
 

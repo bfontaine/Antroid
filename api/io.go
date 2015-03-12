@@ -25,6 +25,8 @@ type Httclient struct {
 	apiVersion string
 
 	cookies *cookiejar.Jar
+
+	debug bool
 }
 
 // NewHTTClient creates a new HTTP client.
@@ -67,8 +69,8 @@ func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 		Accept:    "application/json",
 		UserAgent: h.UserAgent,
 		// the server uses a self-signed certificate
-		Insecure: true,
-		//ShowDebug: true,
+		Insecure:  true,
+		ShowDebug: h.debug,
 
 		CookieJar: h.cookies,
 	}
@@ -117,7 +119,13 @@ func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 
 	var resp baseResponse
 
-	if b.err = res.Body.FromJsonTo(&resp); b.err != nil {
+	b.err = res.Body.FromJsonTo(&resp)
+
+	if h.debug {
+		fmt.Printf("\n==> %s\n\n", resp)
+	}
+
+	if b.err != nil {
 		return
 	}
 

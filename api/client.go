@@ -6,6 +6,8 @@ type Client struct {
 	password      string
 	authenticated bool
 	http          *Httclient
+
+	debug bool
 }
 
 // NewClient creates and returns a new API client.
@@ -13,6 +15,12 @@ func NewClient() (*Client, error) {
 	return &Client{
 		http: NewHTTClient(),
 	}, nil
+}
+
+// SetDebug sets the debug flag
+func (cl *Client) SetDebug(debug bool) {
+	cl.debug = debug
+	cl.http.debug = debug
 }
 
 func (cl *Client) getUserCredentialsParams() UserCredentialsParams {
