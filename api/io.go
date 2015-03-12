@@ -145,6 +145,14 @@ const (
 	post = "POST"
 )
 
+func (h *Httclient) get(call string, data interface{}) *Body {
+	return h.call(get, call, data)
+}
+
+func (h *Httclient) post(call string, data interface{}) *Body {
+	return h.call(post, call, data)
+}
+
 /*
    Each method below perform a call to one endpoint. We expose them instead of
    the generic .call method to be able to type-check the parameters of each
@@ -152,66 +160,64 @@ const (
 */
 
 // CallAPI performs a call to /api.
-func (h *Httclient) CallAPI() *Body {
-	return h.call(get, "/api", NoParams{})
-}
+func (h *Httclient) CallAPI() *Body { return h.get("/api", NoParams{}) }
 
 // CallAuth performs a call to /auth.
 func (h *Httclient) CallAuth(params UserCredentialsParams) *Body {
-	return h.call(post, "/auth", params)
+	return h.post("/auth", params)
 }
 
 // CallCreate performs a call to /create.
 func (h *Httclient) CallCreate(params GameSpecParams) *Body {
-	return h.call(get, "/create", params)
+	return h.get("/create", params)
 }
 
 // CallDestroy performs a call to /destroy.
 func (h *Httclient) CallDestroy(params GameIDParams) *Body {
-	return h.call(get, "/destroy", params)
+	return h.get("/destroy", params)
 }
 
 // CallGames performs a call to /games.
 func (h *Httclient) CallGames() *Body {
-	return h.call(get, "/games", NoParams{})
+	return h.get("/games", NoParams{})
 }
 
 // CallJoin performs a call to /join.
 func (h *Httclient) CallJoin(params GameIDParams) *Body {
-	return h.call(get, "/join", params)
+	return h.get("/join", params)
 }
 
 // CallLog performs a call to /log.
 func (h *Httclient) CallLog(params GameIDParams) *Body {
-	return h.call(get, "/log", params)
+	return h.get("/log", params)
 }
 
 // CallLogout performs a call to /logout.
 func (h *Httclient) CallLogout() *Body {
-	return h.call(get, "/logout", NoParams{})
+	return h.get("/logout", NoParams{})
 }
 
 // CallPlay performs a call to /play.
 func (h *Httclient) CallPlay(params PlayParams) *Body {
-	return h.call(get, "/play", params)
+	return h.get("/play", params)
 }
 
 // CallRegister performs a call to /register.
 func (h *Httclient) CallRegister(params UserCredentialsParams) *Body {
-	return h.call(post, "/register", params)
+	return h.post("/register", params)
 }
 
 // CallShutdown performs a call to /shutdown.
 func (h *Httclient) CallShutdown(params GenericIDParams) *Body {
-	return h.call(get, "/shutdown", params)
+	return h.get("/shutdown", params)
 }
 
 // CallStatus performs a call to /status.
 func (h *Httclient) CallStatus(params GameIDParams) *Body {
-	return h.call(get, "/status", params)
+	return h.get("/status", params)
 }
 
 // CallWhoAmI performs a call to /whoami.
 func (h *Httclient) CallWhoAmI() *Body {
-	return h.call(get, "/whoami", NoParams{})
+	return h.get("/whoami", NoParams{})
 }
