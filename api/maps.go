@@ -33,6 +33,10 @@ type Map struct {
 	width, height int
 }
 
+func NewPartialMap() PartialMap {
+	return PartialMap{Cells: make(map[Position]*Cell)}
+}
+
 func (pm PartialMap) Width() int {
 	maxX := -1
 
@@ -63,3 +67,19 @@ func (pm PartialMap) Cell(x, y int) *Cell {
 
 func (m Map) Width() int  { return m.width }
 func (m Map) Height() int { return m.height }
+
+func (pm *PartialMap) Combine(maps ...PartialMap) {
+	for _, m := range maps {
+		for p, c := range m.Cells {
+			pm.Cells[p] = c
+		}
+	}
+}
+
+// Combine returns a new PartialMap that is the combination of the first one
+// and all the others
+func CombinePartialMaps(maps ...PartialMap) PartialMap {
+	pm := NewPartialMap()
+	pm.Combine(maps...)
+	return pm
+}

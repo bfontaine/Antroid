@@ -27,13 +27,14 @@ func main() {
 
 	// -play options
 	playCmds := flag.String("cmds", "", "play with this commands")
+	prettyMap := flag.Bool("pretty", false, "print a pretty map when playing")
 
 	gs := api.GameSpec{Public: true}
 
 	// -create options
 	flag.StringVar(&gs.Description, "description", "", "game description")
 	flag.IntVar(&gs.Pace, "pace", 1, "pace")
-	flag.IntVar(&gs.Turns, "turns", 1, "turns")
+	flag.IntVar(&gs.Turns, "turns", 10, "turns")
 	flag.IntVar(&gs.AntsPerPlayer, "ants", 1, "ants per player")
 	flag.IntVar(&gs.MaxPlayers, "max", 1, "max players")
 	flag.IntVar(&gs.MinPlayers, "min", 1, "min players")
@@ -129,7 +130,11 @@ func main() {
 		if t, err := cl.PlayIdentifier(api.GameID(*playId), api.Commands(*playCmds)); err != nil {
 			exitErr(err)
 		} else {
-			fmt.Printf("Turn: %s\n", t)
+			if *prettyMap {
+				fmt.Println(t.PrettyString())
+			} else {
+				fmt.Printf("%s\n", t)
+			}
 		}
 	}
 

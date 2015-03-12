@@ -135,7 +135,7 @@ func (p playResponse) getTurn() (t *Turn, err error) {
 			return
 		}
 
-		pmap := PartialMap{Cells: make(map[Position]*Cell)}
+		pmap := NewPartialMap()
 
 		for _, cell := range mapResp {
 			p := Position{X: cell.X, Y: cell.Y}
