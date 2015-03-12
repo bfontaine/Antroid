@@ -26,3 +26,7 @@ func (resp baseResponse) String() string {
 	return fmt.Sprintf(`{"status": "%s", "response": %s}`,
 		resp.Status, resp.Response)
 }
+
+func (t Turn) String() string {
+	return fmt.Sprintf("%d", t.Number)
+}
