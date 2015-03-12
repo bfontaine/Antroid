@@ -14,10 +14,6 @@ func (g GameStatus) String() string {
 		g.Identifier, g.CreationDate, g.Creator, g.Teaser, g.Turn, g.Status)
 }
 
-func (cmd Command) String() string {
-	return string(cmd)
-}
-
 func (cmds Commands) String() string {
 	return string(cmds)
 }
@@ -27,6 +23,14 @@ func (resp baseResponse) String() string {
 		resp.Status, resp.Response)
 }
 
-func (t Turn) String() string {
-	return fmt.Sprintf("%d", t.Number)
+// func (t Turn) String() string {
+// 	return fmt.Sprintf("%d", t.Number)
+// }
+
+func (p Position) String() string {
+	return fmt.Sprintf("(%d, %d)", p.X, p.Y)
+}
+
+func (d Direction) String() string {
+	return fmt.Sprintf("(%d, %d)", d.X, d.Y)
 }

@@ -88,5 +88,85 @@ type gameStatusResponse struct {
 
 type playResponse struct {
 	Turn         int
-	Observations []json.RawMessage
+	Observations [][]json.RawMessage
+}
+
+type visibleAntResponse struct {
+	X, Y, Dx, Dy int
+	Brain        string
+}
+
+type antResponse struct {
+	visibleAntResponse
+	ID, Energy, Acid int
+}
+
+type cellResponse struct {
+	X, Y    int
+	Content struct{ Kind string }
+}
+
+type mapResponse []cellResponse
+
+func (p playResponse) getTurn() (t *Turn, err error) {
+	var antResp antResponse
+	var mapResp []cellResponse
+	var visibleAntsResponse []visibleAntResponse
+
+	t = &Turn{Number: p.Turn, AntsStatuses: []AntStatus{}}
+
+	for _, obs := range p.Observations {
+
+		// ant info
+		if err = json.Unmarshal(obs[0], &antResp); err != nil {
+			return
+		}
+
+		// map info
+		if err = json.Unmarshal(obs[1], &mapResp); err != nil {
+			return
+		}
+
+		// visible ants info
+		if err = json.Unmarshal(obs[2], &visibleAntsResponse); err != nil {
+			return
+		}
+
+		pmap := PartialMap{Cells: []Cell{}}
+
+		for _, cell := range mapResp {
+			pmap.Cells = append(pmap.Cells, Cell{
+				Pos:     Position{X: cell.X, Y: cell.Y},
+				Content: cell.Content.Kind,
+			})
+		}
+
+		ants := []BasicAntStatus{}
+
+		for _, a := range visibleAntsResponse {
+			ants = append(ants, BasicAntStatus{
+				Pos:   Position{X: a.X, Y: a.Y},
+				Dir:   Direction{X: a.Dx, Y: a.Dy},
+				Brain: a.Brain,
+			})
+		}
+
+		ant := AntStatus{
+			BasicAntStatus: BasicAntStatus{
+				Pos:   Position{X: antResp.X, Y: antResp.Y},
+				Dir:   Direction{X: antResp.Dx, Y: antResp.Dy},
+				Brain: antResp.Brain,
+			},
+
+			ID:          antResp.ID,
+			Energy:      antResp.Energy,
+			Acid:        antResp.Acid,
+			Vision:      pmap,
+			VisibleAnts: ants,
+		}
+
+		t.AntsStatuses = append(t.AntsStatuses, ant)
+	}
+
+	return
 }

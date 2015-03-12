@@ -204,12 +204,12 @@ func (cl *Client) GetGameIdentifierLog(id GameID) (gl GameLog, err error) {
 }
 
 // Play a game with a list of commands
-func (cl *Client) Play(g *Game, cmds Commands) (Turn, error) {
+func (cl *Client) Play(g *Game, cmds Commands) (*Turn, error) {
 	return cl.PlayIdentifier(g.Identifier, cmds)
 }
 
 // Play a game with a list of commands, given its identifier
-func (cl *Client) PlayIdentifier(id GameID, cmds Commands) (t Turn, err error) {
+func (cl *Client) PlayIdentifier(id GameID, cmds Commands) (t *Turn, err error) {
 	body := cl.http.CallPlay(PlayParams{ID: id, Cmds: cmds.String()})
 
 	if err = body.Error(); err != nil {
@@ -222,9 +222,7 @@ func (cl *Client) PlayIdentifier(id GameID, cmds Commands) (t Turn, err error) {
 		return
 	}
 
-	// TODO
-
-	return
+	return resp.getTurn()
 }
 
 // ShutdownIdentifier shutdowns a server (need to be root). We don't know
