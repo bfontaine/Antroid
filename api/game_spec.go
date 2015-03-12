@@ -74,7 +74,7 @@ func (gs *GameSpec) Validate() bool {
 		return false
 	}
 
-	// TODO check if the API accepts empty teasers
+	// Note: the API accepts empty teasers
 
 	if !paceRange.Include(gs.Pace) ||
 		!turnsRange.Include(gs.Turns) ||
