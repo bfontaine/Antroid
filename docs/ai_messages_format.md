@@ -120,11 +120,14 @@ the known map is `120`x`80`.
 
 ### Client Message
 
-The client is expected to send one action per ant, one on each line:
+The client is expected to send one command for all their ants, on one line:
 
-    N C
+    C
 
-`N` is the ant id, `C` is the command.
+`C` is the command. For example:
+
+    1:forward,2:rest,4:rest,3:right
+
 
 ## Game
 
