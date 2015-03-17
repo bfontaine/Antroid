@@ -67,6 +67,18 @@ With `X`, `Y` the position, `DX`, `DY` the direction, `E` the energy level,
 `A` the acid level, and `B` the brain state (`1`: controlled, we don't know the
 other values for now).
 
+It then contains one line with the number of other players’ ants we’re able to
+see at this turn:
+
+    N
+
+And `N` lines:
+
+    X Y DX DY B
+
+These are the same as the lines for our ants except that we don't have their
+energy and acid levels.
+
 It then contains a line describing the map:
 
     W H N
@@ -91,6 +103,7 @@ a point we remember from a previous turn.
     112 42 -1 0 32 100 1
     5 3 -1 0 100 56 1
     2 10 -1 0 100 100 1
+    0
     120 80 124
     0 0 0 1
     0 1 2 1
@@ -107,7 +120,11 @@ the known map is `120`x`80`.
 
 ### Client Message
 
-TBD
+The client is expected to send one action per ant, one on each line:
+
+    N C
+
+`N` is the ant id, `C` is the command.
 
 ## Game
 
