@@ -1,5 +1,7 @@
 package main
 
+// this executable is really a sandbox for now
+
 import (
 	"flag"
 	"fmt"
@@ -13,6 +15,7 @@ func exitErr(e error) {
 	os.Exit(1)
 }
 
+/*
 func gameServer() { // just a test for now
 	pool := api.NewAIPool()
 
@@ -27,10 +30,35 @@ func gameServer() { // just a test for now
 	pool.Start()
 
 	pool.SendMessage("yolo les filles\n")
-	fmt.Printf("output : '%s'\n", pool.GetResponse())
+	fmt.Printf("output : '%s'\n", pool.GetCommandResponse())
 
 	pool.SendMessage("yolo les filles\n")
-	fmt.Printf("output : '%s'\n", pool.GetResponse())
+	fmt.Printf("output : '%s'\n", pool.GetCommandResponse())
+}
+*/
+func gameServer(login, passwd, ai string, gs *api.GameSpec) {
+	p := api.NewPlayer(login, passwd)
+
+	p.Client.SetDebug(true)
+
+	p.AIs.AddAI(ai)
+
+	if err := p.Connect(); err != nil {
+		fmt.Printf("%s\n", err)
+		return
+	}
+
+	if err := p.CreateAndJoinGame(gs); err != nil {
+		fmt.Printf("%s\n", err)
+		return
+	}
+
+	for {
+		if err := p.PlayTurn(); err != nil {
+			fmt.Printf("%s\n", err)
+			return
+		}
+	}
 }
 
 func main() {
@@ -67,9 +95,22 @@ func main() {
 
 	debug := flag.Bool("debug", false, "debug mode")
 
+	server := flag.Bool("server", false, "start a server")
+
+	ai := flag.String("ai", "", "the AI to use")
+
 	flag.Parse()
 
-	cl, _ := api.NewClient()
+	if *server {
+		if *ai == "" {
+			fmt.Println("AI expected")
+			return
+		}
+		gameServer(*login, *passwd, *ai, &gs)
+		return
+	}
+
+	cl := api.NewClient()
 
 	cl.SetDebug(*debug)
 

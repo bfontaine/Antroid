@@ -34,7 +34,7 @@ func (t Turn) PrettyString() string {
 	pmap := NewPartialMap()
 
 	for _, ant := range t.AntsStatuses {
-		pmap.Combine(ant.Vision)
+		pmap.Combine(*ant.Vision)
 	}
 
 	buf.WriteString(fmt.Sprintf("Turn %d\n\nMap:\n%s",

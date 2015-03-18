@@ -11,8 +11,9 @@ type Direction Position
 
 // Cell is a positioned cell
 type Cell struct {
-	Pos     Position
-	Content string
+	Pos        Position
+	Content    string
+	Visibility bool
 }
 
 type MapInterface interface {
@@ -33,8 +34,8 @@ type Map struct {
 	width, height int
 }
 
-func NewPartialMap() PartialMap {
-	return PartialMap{Cells: make(map[Position]*Cell)}
+func NewPartialMap() *PartialMap {
+	return &PartialMap{Cells: make(map[Position]*Cell)}
 }
 
 func (pm PartialMap) Width() int {
@@ -76,9 +77,17 @@ func (pm *PartialMap) Combine(maps ...PartialMap) {
 	}
 }
 
+func (pm *PartialMap) SetVisibility(v bool) {
+	for _, c := range pm.Cells {
+		c.Visibility = v
+	}
+}
+
+func (pm *PartialMap) ResetVisibility() { pm.SetVisibility(false) }
+
 // Combine returns a new PartialMap that is the combination of the first one
 // and all the others
-func CombinePartialMaps(maps ...PartialMap) PartialMap {
+func CombinePartialMaps(maps ...PartialMap) *PartialMap {
 	pm := NewPartialMap()
 	pm.Combine(maps...)
 	return pm

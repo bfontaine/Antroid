@@ -11,10 +11,10 @@ type Client struct {
 }
 
 // NewClient creates and returns a new API client.
-func NewClient() (*Client, error) {
+func NewClient() *Client {
 	return &Client{
 		http: NewHTTClient(),
-	}, nil
+	}
 }
 
 // SetDebug sets the debug flag
@@ -113,7 +113,7 @@ func (cl *Client) Logout() (err error) {
 }
 
 // CreateGame creates a new game and returns it.
-func (cl *Client) CreateGame(gs *GameSpec) (g Game, err error) {
+func (cl *Client) CreateGame(gs *GameSpec) (g *Game, err error) {
 	body := cl.http.CallCreate(gs.toParams())
 
 	if err = body.Error(); err != nil {
@@ -126,8 +126,7 @@ func (cl *Client) CreateGame(gs *GameSpec) (g Game, err error) {
 		return
 	}
 
-	g.Spec = gs
-	g.Identifier = GameID(resp.Identifier)
+	g = &Game{Spec: gs, Identifier: GameID(resp.Identifier)}
 
 	return
 }
