@@ -26,7 +26,7 @@
 If you don’t have a `GOPATH`, create a directory somewhere where you'll put
 your Go code, for example `~/Go`.
 
-Add the following to your `.bashrc` (ajust with your settings):
+Add the following to your `.bashrc` (adjust with your settings):
 
     export GOPATH="$HOME/Go"
     export PATH="$GOPATH/bin:$PATH"
