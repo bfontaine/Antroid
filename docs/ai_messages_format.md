@@ -51,13 +51,12 @@ Contents:
 
 The first line is as follow:
 
-    T A P S G
+    T A P S
 
 With `T` the turn number, `A` the ants count per player, `P` the players count,
-`S` the game status (`1` for `playing`, and `0` for `over`), and `G` the number
-of ants this AI is expected to control.
+and `S` the game status (`1` for `playing`, and `0` for `over`).
 
-It then contains one line containing the ids of all controlled ants (0-indexed).
+Note: each AI can control multiple ants, the protocol doesn’t care about that.
 
 It then contains `A` lines, one per ant, with the following content:
 
