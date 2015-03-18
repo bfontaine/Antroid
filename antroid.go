@@ -54,8 +54,13 @@ func gameServer(login, passwd, ai string, gs *api.GameSpec, debug bool) {
 	}
 
 	for {
-		if err := p.PlayTurn(); err != nil {
+		if done, err := p.PlayTurn(); err != nil {
 			fmt.Printf("%s\n", err)
+			return
+		} else if done {
+			fmt.Println("End of game.")
+			fmt.Println("Scores:")
+			p.PrintScores()
 			return
 		}
 	}

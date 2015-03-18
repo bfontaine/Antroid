@@ -14,6 +14,8 @@ type Player struct {
 	status     *GameStatus
 	turn       *Turn
 	partialMap *PartialMap
+
+	done bool
 }
 
 func NewPlayer(username, password string) (p *Player) {
@@ -91,14 +93,40 @@ func (p *Player) JoinGame(id GameID) (err error) {
 	return
 }
 
-func (p *Player) PlayTurn() error {
+func (p *Player) PlayTurn() (done bool, err error) {
 	p.sendTurnStatusToAIs()
-	return p.playTurn()
+	err = p.playTurn()
+	done = p.done
+
+	// end of game
+	if done && err == ErrGameNotPlaying {
+		err = nil
+	}
+
+	return
 }
 
 func (p *Player) Quit() error {
 	p.AIs.Stop()
 	return p.Client.Logout()
+}
+
+func (p *Player) PrintScores() {
+	var usernameMaxSize int
+
+	for username := range p.status.Score {
+		usernameSize := len(username)
+
+		if usernameSize > usernameMaxSize {
+			usernameMaxSize = usernameSize
+		}
+	}
+
+	format := fmt.Sprintf("%%-%ds: %%d\n", usernameMaxSize)
+
+	for user, score := range p.status.Score {
+		fmt.Printf(format, user, score)
+	}
 }
 
 func (p *Player) updateStatus() (err error) {
@@ -152,6 +180,7 @@ func (p *Player) sendTurnStatusToAIs() {
 
 	playing := 1
 	if p.status.Status == "over" {
+		p.done = true
 		playing = 0
 	}
 
