@@ -1,5 +1,7 @@
 # Antroid
 
+![logo](docs/antroid_64.png)
+
 ## Members
 
 * David Galichet: `galichet.david@yahoo.fr`
