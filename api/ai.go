@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
+	"sync"
 )
 
 const (
@@ -29,9 +31,16 @@ func NewAI(name string, arg ...string) *AI {
 }
 
 // Start starts the AI. You should start it in a goroutine.
-func (ai *AI) Start() (err error) {
+func (ai *AI) Start(wg *sync.WaitGroup) (err error) {
+
+	if wg != nil {
+		defer wg.Done()
+	}
 
 	stdin, err := ai.c.StdinPipe()
+
+	// Note: we might want to redirect each AI's stderr in a specific file
+	ai.c.Stderr = os.Stderr
 
 	if err != nil {
 		return
@@ -84,12 +93,15 @@ func (ai *AI) Start() (err error) {
 // An AIPool is a pool of multiple AIs
 type AIPool struct {
 	ais []*AI
+
+	wg *sync.WaitGroup
 }
 
 // NewAIPool returns a new empty AIPool
 func NewAIPool() *AIPool {
 	return &AIPool{
 		ais: []*AI{},
+		wg:  &sync.WaitGroup{},
 	}
 }
 
@@ -101,7 +113,8 @@ func (pool *AIPool) AddAI(name string, args ...string) {
 // Start starts all AIs in separate goroutines
 func (pool *AIPool) Start() {
 	for _, ai := range pool.ais {
-		go ai.Start()
+		pool.wg.Add(1)
+		go ai.Start(pool.wg)
 	}
 }
 
@@ -132,4 +145,5 @@ func (pool *AIPool) GetCommandResponse() (resp Commands) {
 
 func (pool *AIPool) Stop() {
 	pool.SendMessage(STOP)
+	pool.wg.Wait()
 }
