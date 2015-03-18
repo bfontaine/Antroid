@@ -130,5 +130,5 @@ The client is expected to send one command for all their ants, on one line:
 
 ## Game
 
-On each turn, the game server sents a message to each AI program, which is then
+On each turn, the game server sends a message to each AI program, which is then
 expected to respond with an action to perform with their controlled ants.
