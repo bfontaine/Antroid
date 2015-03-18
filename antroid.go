@@ -15,27 +15,6 @@ func exitErr(e error) {
 	os.Exit(1)
 }
 
-/*
-func gameServer() { // just a test for now
-	pool := api.NewAIPool()
-
-	// sample program:
-	//   #! /bin/bash
-	//   while true; do read cmd;sleep $1;echo "$1:rest";done
-	pool.AddAI("/tmp/foo.sh", "3")
-	pool.AddAI("/tmp/foo.sh", "4")
-	pool.AddAI("/tmp/foo.sh", "2")
-	pool.AddAI("/tmp/foo.sh", "1")
-
-	pool.Start()
-
-	pool.SendMessage("yolo les filles\n")
-	fmt.Printf("output : '%s'\n", pool.GetCommandResponse())
-
-	pool.SendMessage("yolo les filles\n")
-	fmt.Printf("output : '%s'\n", pool.GetCommandResponse())
-}
-*/
 func gameServer(login, passwd, ai string, gs *api.GameSpec, debug bool) {
 	p := api.NewPlayer(login, passwd)
 

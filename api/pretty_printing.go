@@ -28,6 +28,7 @@ func (t Turn) String() string {
 	return fmt.Sprintf("turn %d", t.Number)
 }
 
+// note: we'll remove this when the external map viewer will be implemented
 func (t Turn) PrettyString() string {
 	var buf bytes.Buffer
 
@@ -43,6 +44,7 @@ func (t Turn) PrettyString() string {
 	return buf.String()
 }
 
+// note: we'll remove this when the external map viewer will be implemented
 func PrettyMap(m MapInterface) string {
 	var buf bytes.Buffer
 
