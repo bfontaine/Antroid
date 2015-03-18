@@ -51,8 +51,8 @@ func NewFakeAPIServer() (*string, *httptest.Server) {
                   "input": [ "i1 : string", "i2 : string" ],
                   "output": [],
                   "errors": [
-                    { "code": 332299703, "description": "USER_ALREADY_EXISTS" },
-                    { "code": 621433138, "description": "INVALID_LOGIN" }
+                    { "code": 334269347, "description": "USER_ALREADY_EXISTS" },
+                    { "code": 114981602, "description": "INVALID_LOGIN" }
                   ],
                   "description": "Do something"
                 },
@@ -87,7 +87,7 @@ func NewFakeAPIServer() (*string, *httptest.Server) {
 				fmt.Fprint(w, fmt.Sprintf(`{
                   "status": "error",
                   "response": {
-                    "error_code": 332299703,
+                    "error_code": 334269347,
                     "error_msg": "You already exist, %s."
                   }
                 }`, login))
@@ -120,7 +120,7 @@ func NewFakeAPIServer() (*string, *httptest.Server) {
 				fmt.Fprint(w, fmt.Sprintf(`{
                   "status": "error",
                   "response": {
-                    "error_code": 202165063,
+                    "error_code": 502441794,
                     "error_msg": "I do not know you, %s."
                   }
                 }`, login))
@@ -173,7 +173,7 @@ func TestClient(t *testing.T) {
 
 		g.BeforeEach(func() {
 			logged, ts = NewFakeAPIServer()
-			c, _ = NewClient()
+			c = NewClient()
 			c.http.baseURL = ts.URL
 		})
 
@@ -223,9 +223,9 @@ func TestClient(t *testing.T) {
 					Input: []string{"i1 : string", "i2 : string"},
 					//Output: []string{},
 					Errors: []APIError{
-						APIError{Code: 332299703,
+						APIError{Code: 334269347,
 							Description: "USER_ALREADY_EXISTS"},
-						APIError{Code: 621433138,
+						APIError{Code: 114981602,
 							Description: "INVALID_LOGIN"},
 					},
 					Description: "Do something",

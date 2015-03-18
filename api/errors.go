@@ -34,20 +34,20 @@ var (
 
 // See the API spec
 var errorCodes = map[int]error{
-	202165063:  ErrUnknownUser,
-	285625267:  ErrWrongCmd,
-	306276868:  ErrAlreadyJoined,
-	318351321:  ErrGameNotPlaying,
-	332299703:  ErrUserAlreadyExists,
-	415302510:  ErrNotLogged,
-	523177601:  ErrMustJoin,
-	591857505:  ErrWrongAnt,
-	598240942:  ErrGameNotOver,
-	621433138:  ErrInvalidLogin,
-	761507830:  ErrNoMoreSlot,
-	796193025:  ErrWrongGame,
-	995492770:  ErrInvalidArgument,
-	1032614003: ErrNoPerm,
+	502441794:  ErrUnknownUser,       // UNKNOWN_USER
+	4313039:    ErrWrongCmd,          // INVALID_COMMAND
+	443034632:  ErrAlreadyJoined,     // ALREADY_JOINED
+	357629463:  ErrGameNotPlaying,    // GAME_IS_NOT_PLAYING
+	334269347:  ErrUserAlreadyExists, // USER_ALREADY_EXISTS
+	32403037:   ErrNotLogged,         // MUST_BE_LOGGED
+	523177601:  ErrMustJoin,          // MUST_JOIN_FIRST
+	973268714:  ErrWrongAnt,          // INVALID_ANT_IDENTIFIER
+	808783211:  ErrGameNotOver,       // GAME_IS_NOT_OVER
+	114981602:  ErrInvalidLogin,      // INVALID_LOGIN
+	1001223883: ErrNoMoreSlot,        // NO_MORE_SLOT
+	513589683:  ErrWrongGame,         // INVALID_GAME_IDENTIFIER
+	677388348:  ErrInvalidArgument,   // INVALID_ARGUMENT
+	842913797:  ErrNoPerm,            // NO_PERMISSION
 }
 
 func errorForCode(code int) (err error) {
