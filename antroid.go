@@ -36,10 +36,10 @@ func gameServer() { // just a test for now
 	fmt.Printf("output : '%s'\n", pool.GetCommandResponse())
 }
 */
-func gameServer(login, passwd, ai string, gs *api.GameSpec) {
+func gameServer(login, passwd, ai string, gs *api.GameSpec, debug bool) {
 	p := api.NewPlayer(login, passwd)
 
-	p.Client.SetDebug(true)
+	p.Client.SetDebug(debug)
 
 	p.AIs.AddAI(ai)
 
@@ -106,7 +106,7 @@ func main() {
 			fmt.Println("AI expected")
 			return
 		}
-		gameServer(*login, *passwd, *ai, &gs)
+		gameServer(*login, *passwd, *ai, &gs, *debug)
 		return
 	}
 
