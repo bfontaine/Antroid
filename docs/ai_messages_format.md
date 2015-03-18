@@ -95,8 +95,7 @@ a point we remember from a previous turn.
 
 #### Example
 
-    4 5 2 1 5
-    0 1 2 3 4
+    4 5 2 1
     0 0 -1 0 100 100 1
     25 78 -1 0 17 100 1
     112 42 -1 0 32 100 1
