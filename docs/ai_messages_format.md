@@ -24,6 +24,7 @@ For each ant:
 
 For each ant:
 
+* Id
 * X
 * Y
 * DX
@@ -60,11 +61,11 @@ Note: each AI can control multiple ants, the protocol doesn’t care about that.
 
 It then contains `A` lines, one per ant, with the following content:
 
-    X Y DX DY E A B
+    ID X Y DX DY E A B
 
-With `X`, `Y` the position, `DX`, `DY` the direction, `E` the energy level,
-`A` the acid level, and `B` the brain state (`1`: controlled, we don't know the
-other values for now).
+With `ID` the ant’s ID, `X`, `Y` the position, `DX`, `DY` the direction, `E`
+the energy level, `A` the acid level, and `B` the brain state (`1`: controlled,
+we don't know the other values for now).
 
 It then contains one line with the number of other players’ ants we’re able to
 see at this turn:
@@ -76,7 +77,7 @@ And `N` lines:
     X Y DX DY B
 
 These are the same as the lines for our ants except that we don't have their
-energy and acid levels.
+energy and acid levels nor their ID.
 
 It then contains a line describing the map:
 
@@ -96,11 +97,11 @@ a point we remember from a previous turn.
 #### Example
 
     4 5 2 1
-    0 0 -1 0 100 100 1
-    25 78 -1 0 17 100 1
-    112 42 -1 0 32 100 1
-    5 3 -1 0 100 56 1
-    2 10 -1 0 100 100 1
+    0 0 0 -1 0 100 100 1
+    1 25 78 -1 0 17 100 1
+    2 112 42 -1 0 32 100 1
+    3 5 3 -1 0 100 56 1
+    4 2 10 -1 0 100 100 1
     0
     120 80 124
     0 0 0 1
