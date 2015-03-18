@@ -24,7 +24,7 @@ type GameStatus struct {
 	Players []string
 }
 
-func gameStatusFromResponse(id GameID, resp gameStatusResponse) (gs *GameStatus) {
+func gameStatusFromResponse(id GameID, resp gameStatusResponse) *GameStatus {
 	sp := GameSpec{
 		Public:        (resp.Visibility == "public"),
 		Description:   resp.Teaser,
@@ -34,7 +34,7 @@ func gameStatusFromResponse(id GameID, resp gameStatusResponse) (gs *GameStatus)
 		InitialAcid:   resp.InitialAcid,
 	}
 
-	gs = &GameStatus{
+	return &GameStatus{
 		Game: Game{
 			Identifier:   id,
 			CreationDate: resp.CreationDate,
@@ -48,6 +48,4 @@ func gameStatusFromResponse(id GameID, resp gameStatusResponse) (gs *GameStatus)
 		Turn:    resp.Turn,
 		Players: resp.Players,
 	}
-
-	return
 }
