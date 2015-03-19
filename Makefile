@@ -18,6 +18,7 @@ deps:
 	go get -v -d -t ./...
 	go get golang.org/x/tools/cmd/vet
 	go get github.com/golang/lint/golint
+	go get golang.org/x/tools/cmd/cover
 
 clean:
 	$(RM) *~ $(COVERFILE)

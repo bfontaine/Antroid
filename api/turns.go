@@ -47,6 +47,7 @@ type Turn struct {
 	AntsStatuses []AntStatus
 }
 
+// EmptyTurn represents an empty turn
 var EmptyTurn = Turn{
 	Number:       0,
 	AntsStatuses: []AntStatus{},

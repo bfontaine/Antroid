@@ -13,6 +13,7 @@ type Game struct {
 	Spec *GameSpec
 }
 
+// A GameStatus represents the current status of a game
 type GameStatus struct {
 	Game
 

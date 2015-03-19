@@ -158,7 +158,9 @@ func (cl *Client) ListGames() (games []Game, err error) {
 	}
 
 	var resp struct {
-		Games []struct{ Game_description Game }
+		Games []struct {
+			GameDescription Game `json:"game_description"`
+		}
 	}
 
 	if err = body.DumpTo(&resp); err != nil {
@@ -166,7 +168,7 @@ func (cl *Client) ListGames() (games []Game, err error) {
 	}
 
 	for _, g := range resp.Games {
-		games = append(games, g.Game_description)
+		games = append(games, g.GameDescription)
 	}
 
 	return
@@ -202,12 +204,12 @@ func (cl *Client) GetGameIdentifierLog(id GameID) (gl GameLog, err error) {
 	return GameLog{}, ErrNotImplemented
 }
 
-// Play a game with a list of commands
+// Play plays a game with a list of commands
 func (cl *Client) Play(g *Game, cmds Commands) (*Turn, error) {
 	return cl.PlayIdentifier(g.Identifier, cmds)
 }
 
-// Play a game with a list of commands, given its identifier
+// PlayIdentifier plays a game with a list of commands, given its identifier
 func (cl *Client) PlayIdentifier(id GameID, cmds Commands) (t *Turn, err error) {
 	body := cl.http.CallPlay(PlayParams{ID: id, Cmds: cmds.String()})
 

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	STOP = "STOP"
+	stop = "STOP"
 )
 
 // An AI struct represents an external AI command
@@ -67,7 +67,7 @@ func (ai *AI) Start(wg *sync.WaitGroup) (err error) {
 
 		msg = <-ai.Input
 
-		if msg == STOP {
+		if msg == stop {
 			break
 		}
 
@@ -143,7 +143,8 @@ func (pool *AIPool) GetCommandResponse() (resp Commands) {
 	return Commands(buf.String())
 }
 
+// Stop stops all AIs in the pool and wait for them to terminate
 func (pool *AIPool) Stop() {
-	pool.SendMessage(STOP)
+	pool.SendMessage(stop)
 	pool.wg.Wait()
 }

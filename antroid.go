@@ -52,10 +52,10 @@ func main() {
 	createGame := flag.Bool("create", false, "create a game")
 
 	// flags with game ids
-	gameStatusId := flag.String("status", "", "get a game's status")
-	destroyId := flag.String("destroy", "", "destroy a game")
-	joinId := flag.String("join", "", "join a game")
-	playId := flag.String("play", "", "play a game")
+	gameStatusID := flag.String("status", "", "get a game's status")
+	destroyID := flag.String("destroy", "", "destroy a game")
+	joinID := flag.String("join", "", "join a game")
+	playID := flag.String("play", "", "play a game")
 
 	// -play options
 	playCmds := flag.String("cmds", "", "play with this commands")
@@ -133,33 +133,33 @@ func main() {
 		}
 	}
 
-	if *gameStatusId != "" {
-		gId := api.GameID(*gameStatusId)
+	if *gameStatusID != "" {
+		gID := api.GameID(*gameStatusID)
 
-		if gs, err := cl.GetGameIdentifierStatus(gId); err != nil {
+		if gs, err := cl.GetGameIdentifierStatus(gID); err != nil {
 			exitErr(err)
 		} else {
 			fmt.Printf("%s\n", gs)
 		}
 	}
 
-	if *destroyId != "" {
-		gId := api.GameID(*destroyId)
+	if *destroyID != "" {
+		gID := api.GameID(*destroyID)
 
-		if err := cl.DestroyGameIdentifier(gId); err != nil {
+		if err := cl.DestroyGameIdentifier(gID); err != nil {
 			exitErr(err)
 		} else {
-			fmt.Printf("Game %s successfully destroyed\n", gId)
+			fmt.Printf("Game %s successfully destroyed\n", gID)
 		}
 	}
 
-	if *joinId != "" {
-		gId := api.GameID(*joinId)
+	if *joinID != "" {
+		gID := api.GameID(*joinID)
 
-		if err := cl.JoinGameIdentifier(gId); err != nil {
+		if err := cl.JoinGameIdentifier(gID); err != nil {
 			exitErr(err)
 		} else {
-			fmt.Printf("Game %s successfully joined\n", gId)
+			fmt.Printf("Game %s successfully joined\n", gID)
 		}
 	}
 
@@ -171,8 +171,8 @@ func main() {
 		}
 	}
 
-	if *playId != "" {
-		if t, err := cl.PlayIdentifier(api.GameID(*playId), api.Commands(*playCmds)); err != nil {
+	if *playID != "" {
+		if t, err := cl.PlayIdentifier(api.GameID(*playID), api.Commands(*playCmds)); err != nil {
 			exitErr(err)
 		} else {
 			if *prettyMap {

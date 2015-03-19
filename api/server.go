@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+// A Player represents a local game server connected to the remote one and
+// which sends and receive messages from it.
 type Player struct {
 	Client *Client
 	AIs    *AIPool
@@ -18,6 +20,7 @@ type Player struct {
 	done bool
 }
 
+// NewPlayer returns a pointer on a new Player
 func NewPlayer(username, password string) (p *Player) {
 	p = &Player{
 		Client:     NewClient(),
@@ -32,6 +35,8 @@ func NewPlayer(username, password string) (p *Player) {
 	return
 }
 
+// Connect connects the player to the remote server, first trying to register
+// its credentials.
 func (p *Player) Connect() (err error) {
 	// try to register, just in case the credentials don't exist
 	err = p.Client.RegisterWithCredentials(p.username, p.password)
@@ -44,6 +49,7 @@ func (p *Player) Connect() (err error) {
 	return
 }
 
+// CreateAndJoinGame creates a new game from the given spec and joins it
 func (p *Player) CreateAndJoinGame(gs *GameSpec) (err error) {
 	var g *Game
 
@@ -58,6 +64,7 @@ func (p *Player) CreateAndJoinGame(gs *GameSpec) (err error) {
 	return
 }
 
+// JoinGame joins an existing game
 func (p *Player) JoinGame(id GameID) (err error) {
 
 	if err = p.Client.JoinGameIdentifier(id); err != nil {
@@ -93,6 +100,8 @@ func (p *Player) JoinGame(id GameID) (err error) {
 	return
 }
 
+// PlayTurn sends the game status to all AIs and gets their feedback before
+// sending everything to the remote server
 func (p *Player) PlayTurn() (done bool, err error) {
 	p.sendTurnStatusToAIs()
 	err = p.playTurn()
@@ -106,11 +115,13 @@ func (p *Player) PlayTurn() (done bool, err error) {
 	return
 }
 
+// Quit stops all AIs and logout the player from the remote server
 func (p *Player) Quit() error {
 	p.AIs.Stop()
 	return p.Client.Logout()
 }
 
+// PrintScores prints the current scores
 func (p *Player) PrintScores() {
 	var usernameMaxSize int
 
