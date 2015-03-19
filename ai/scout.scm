@@ -40,6 +40,13 @@
                             ( set! ANTS (cons (list id (list x y dx dy e a b))
                                               ANTS ) ) ) ) )
 
+;; Read the header line (the number of lines to parse)
+;; Fill the [ENEMIES] list.
+(define (read-enemies)
+  (let ((e (string->number (read-line) ) ))
+    ( set! ENEMIES '() ) ;; reset ENEMIES
+    ( do-times _ e (set! ENEMIES (cons (input-int-line) ENEMIES) ) ) ) )
+
 ;; Read the header line containing [W H N] and then
 ;; read the next lines according the header,
 ;; filling [MAP].
@@ -55,6 +62,8 @@
                                       " ant/player: " A
                                       " players: " P
                                       " status: " S))
+            (read-enemies)
+            (print "enemies:" ENEMIES)
             (read-ants)
             (print "ants:" ANTS)
             (read-map)
