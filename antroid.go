@@ -77,7 +77,8 @@ var (
 	minP     = app.Flag("min-players", "Min number of players.").Default("1").Int()
 	energy   = app.Flag("energy", "Initial energy.").Default("100").Int()
 	acid     = app.Flag("acid", "Initial acid.").Default("100").Int()
-	players  = app.Flag("players", "Restrict games to these players.").Strings()
+	players  = app.Flag("player", "Restrict games to this player "+
+		"(can be used multiple times).").Strings()
 
 	// subcommands args
 	statusID  = statusCmd.Arg("id", "game ID").Required().String()
