@@ -32,6 +32,14 @@
              )
   )
 
+;; Read [A] lines and fill the [ANTS] list reading next lines
+;; [ANT] associate an ID to a list of parameters.
+(define (read-ants)
+  ( set! ANTS '() ) ;; reset ANTS
+  ( do-times _ A (match-let (( (id x y dx dy e a b) (input-int-line) ))
+                            ( set! ANTS (cons (list id (list x y dx dy e a b))
+                                              ANTS ) ) ) ) )
+
 ;; Read the header line containing [W H N] and then
 ;; read the next lines according the header,
 ;; filling [MAP].
@@ -47,6 +55,8 @@
                                       " ant/player: " A
                                       " players: " P
                                       " status: " S))
+            (read-ants)
+            (print "ants:" ANTS)
             (read-map)
             (print "map:" MAP)
             )
