@@ -1,5 +1,5 @@
 ;; Be sure that readline, loops and matchable librairies are installed
-;; (e.g. with `[sudo] chicken-install readline loops matchable list-utils`)
+;; (e.g. with `[sudo] chicken-install readline loops matchable`)
 
 ;; Run this AI with: csi scout.scm
 
@@ -10,7 +10,7 @@
 ;; Note: global variables names are UPPERCASE.
 
 ;; Libraries import
-(use readline loops matchable list-utils)
+(use readline loops matchable)
 
 ;; Read a line on stdin, split using ' ' as delim
 (define (input-line)
@@ -38,12 +38,7 @@
 (define (read-map)
   (match-let (( (w h n) (input-int-line) ))
              ( set! MAP '() ) ;; reset MAP
-             ( do-times _ n
-                        (if (null? MAP)
-                            (set! MAP '( (input-int-line) ) )
-                            (unshift! (input-int-line) MAP) ) )
-             )
-  )
+             ( do-times _ n (set! MAP (cons (input-int-line) MAP) ) ) ) )
 
 ;;;; Main loop
 
