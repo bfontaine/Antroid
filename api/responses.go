@@ -75,7 +75,7 @@ type gameStatusResponse struct {
 	Creator        string
 	CreationDate   string `json:"creation_date"`
 	Teaser         string
-	Visibility     string
+	Visibility     json.RawMessage
 	NbAntPerPlayer int `json:"nb_ant_per_player"`
 	Pace           int
 	InitialEnergy  int `json:"initial_energy"`

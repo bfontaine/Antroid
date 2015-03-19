@@ -39,6 +39,9 @@ Now reload your shell and run:
     cd "$GOPATH/src/github.com/bfontaine/antroid"
     git clone git@github.com:bfontaine/Antroid.git .
 
+If you don’t have access to the GitHub repo, just copy the directory in
+`$GOPATH/src/github.com/bfontaine/antroid` and you’ll be fine.
+
 ### Libraries
 
 We used some libraries to build this project, to comply with the guidelines,
@@ -47,6 +50,7 @@ and also because we, well, needed them.
 * `goreq` for easier HTTP requests (Go)
 * `query` to generate query strings (Go)
 * `golbin` and `gomega` for BDD tests (Go)
+* `kingpin` for command-line arguments parsing (Go)
 * `readline` to read text (Scheme)
 * `loops` for loops (Scheme)
 * `matchable` for pattern matching (Scheme)

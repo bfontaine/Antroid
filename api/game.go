@@ -1,5 +1,9 @@
 package api
 
+import (
+	"encoding/json"
+)
+
 // GameID is a game id
 type GameID string
 
@@ -25,14 +29,25 @@ type GameStatus struct {
 	Players []string
 }
 
-func gameStatusFromResponse(id GameID, resp gameStatusResponse) *GameStatus {
+func gameStatusFromResponse(id GameID, resp gameStatusResponse) (*GameStatus, error) {
+	var visibility string
+
 	sp := GameSpec{
-		Public:        (resp.Visibility == "public"),
 		Description:   resp.Teaser,
 		Pace:          resp.Pace,
 		AntsPerPlayer: resp.NbAntPerPlayer,
 		InitialEnergy: resp.InitialEnergy,
 		InitialAcid:   resp.InitialAcid,
+	}
+
+	if err := json.Unmarshal(resp.Visibility, &visibility); err == nil {
+		sp.Public = visibility == "public"
+	} else {
+		sp.Public = false
+
+		if err := json.Unmarshal(resp.Visibility, &sp.Players); err != nil {
+			return nil, err
+		}
 	}
 
 	return &GameStatus{
@@ -48,5 +63,5 @@ func gameStatusFromResponse(id GameID, resp gameStatusResponse) *GameStatus {
 		Status:  resp.Status.Status,
 		Turn:    resp.Turn,
 		Players: resp.Players,
-	}
+	}, nil
 }

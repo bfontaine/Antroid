@@ -253,7 +253,7 @@ func (cl *Client) GetGameIdentifierStatus(id GameID) (gs *GameStatus, err error)
 		return
 	}
 
-	gs = gameStatusFromResponse(id, resp.Status)
+	gs, err = gameStatusFromResponse(id, resp.Status)
 
 	return
 }
