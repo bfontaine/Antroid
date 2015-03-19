@@ -1,5 +1,5 @@
 ;; Be sure that readline, loops and matchable librairies are installed
-;; (e.g. with `[sudo] chicken-install readline loops matchable`)
+;; (e.g. with `[sudo] chicken-install readline loops matchable list-utils`)
 
 ;; Run this AI with: csi scout.scm
 
@@ -10,7 +10,7 @@
 ;; Note: global variables names are UPPERCASE.
 
 ;; Libraries import
-(use readline loops matchable)
+(use readline loops matchable list-utils)
 
 ;; Read a line on stdin, split using ' ' as delim
 (define (input-line)
@@ -32,13 +32,26 @@
              )
   )
 
+;; Read the header line containing [W H N] and then
+;; read the next lines according the header,
+;; filling [MAP].
+(define (read-map)
+  (match-let (( (w h n) (input-int-line) ))
+             ( set! MAP '() ) ;; reset MAP
+             ( do-times _ n
+                        (if (null? MAP)
+                            (set! MAP '( (input-int-line) ) )
+                            (unshift! (input-int-line) MAP) ) )
+             )
+  )
+
 ;;;; Main loop
 
-(define S 1) ;; initialize game status to 'playing' for cold start.
-
-(do-until (= S 0)
-          (read-header)
-          (print T A P S)
-          )
-
-(exit)
+(do-forever (read-header)
+            (if (= S 0) (exit) (print "turn:" T
+                                      " ant/player: " A
+                                      " players: " P
+                                      " status: " S))
+            (read-map)
+            (print "map:" MAP)
+            )
