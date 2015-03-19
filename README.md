@@ -1,6 +1,6 @@
 # Antroid
 
-![logo](docs/antroid_64.png)
+![logo](docs/images/antroid_64.png)
 
 ## Members
 
@@ -11,8 +11,8 @@
 
 ## Constraints
 
-* Use Scheme somewhere in the project
-* Use a lot of libraries
+* ✓ Use Scheme somewhere in the project
+* ✓ Use a lot of libraries
 
 ## Build
 
@@ -38,3 +38,15 @@ Now reload your shell and run:
     mkdir -p "$GOPATH/src/github.com/bfontaine/antroid"
     cd "$GOPATH/src/github.com/bfontaine/antroid"
     git clone git@github.com:bfontaine/Antroid.git .
+
+### Libraries
+
+We used some libraries to build this project, to comply with the guidelines,
+and also because we, well, needed them.
+
+* `goreq` for easier HTTP requests (Go)
+* `query` to generate query strings (Go)
+* `golbin` and `gomega` for BDD tests (Go)
+* `readline` to read text (Scheme)
+* `loops` for loops (Scheme)
+* `matchable` for pattern matching (Scheme)

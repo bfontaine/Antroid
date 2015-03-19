@@ -3,49 +3,6 @@
 The game server communicates with AI programs using standard I/O. Each AI
 program expects to receive messages on STDIN and send back messages on STDOUT.
 
-## Info
-
-Each message from the game server carries the following info:
-
-### Initial
-
-Global Info:
-
-* Turn (int)
-* Ants count (per player) (int)
-* Players count (int)
-
-For each ant:
-
-* Energy (int)
-* Acid (int)
-
-### After the first turn
-
-For each ant:
-
-* Id
-* X
-* Y
-* DX
-* DY
-* Brain state
-
-Map: a list of 3-tuples, each tuple having the following fields:
-
-* X (int)
-* Y (int)
-* Content (int)
-
-Contents:
-
-* `0` (`000`) : grass
-* `2` (`010`) : rock
-* `4` (`100`) : water
-* `1` (`001`) : food (sugar)
-* `3` (`011`) : food (mill)
-* `5` (`101`) : food (meat)
-
 ## Format
 
 ### Server Message
@@ -90,9 +47,18 @@ The message then contains `N` lines, one per point:
 
     X Y C S
 
-Where `X`, `Y` is the position and `C` is the content, as an int code
-previously described. `S` is `1` if the point was seen this turn or `0` if it’s
-a point we remember from a previous turn.
+Where `X`, `Y` is the position and `C` is the content, as an int code as
+described below. `S` is `1` if the point was seen this turn or `0` if it’s a
+point we remember from a previous turn.
+
+Contents:
+
+* `0` (`000`) : grass
+* `2` (`010`) : rock
+* `4` (`100`) : water
+* `1` (`001`) : food (sugar)
+* `3` (`011`) : food (mill)
+* `5` (`101`) : food (meat)
 
 #### Example
 
