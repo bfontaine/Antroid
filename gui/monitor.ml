@@ -15,6 +15,15 @@ let read_ints () = input_line stdin
                    |> Str.split (Str.regexp_string " ")
                    |> List.map int_of_string
 
+let color_of_content = function
+  | 0 -> rgb  51 102   0 (* grass: green  *)
+  | 2 -> rgb 192 192 192 (*  rock: grey   *)
+  | 4 -> rgb   0 153 153 (* water: blue   *)
+  | 1 -> rgb 255 255 255 (* sugar: white  *)
+  | 3 -> rgb 255 255 102 (* wheat: yellow *)
+  | 5 -> rgb 255 153 151 (*  meat: brown  *)
+  | _ -> rgb 255   0 127 (*     ?: pink   *)
+
 let _ =
 
   (* Choose the screen size on the command line or use default. *)
@@ -54,10 +63,9 @@ let _ =
     (* Helper: draw a square at [(x, y)]. *)
     let square x y = fill_rect (x * side) (y * side) side side in
 
-    (* Draw map.
-     * For now, Every cell is grass *)
-    set_color green ;
-    List.iter (fun [x ; y; _ ; _] -> square x y) map ;
+    (* Draw map. *)
+    List.iter (fun [x ; y; c; _] -> set_color (color_of_content c) ;
+                                    square x y) map ;
 
     (* Allies *)
     set_color blue ;
