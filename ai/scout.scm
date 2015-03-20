@@ -1,5 +1,7 @@
-;; Be sure that readline, loops and matchable librairies are installed
-;; (e.g. with `[sudo] chicken-install readline loops matchable`)
+#!/usr/bin/env csi
+
+;; Be sure that loops and matchable librairies are installed
+;; (e.g. with `[sudo] chicken-install loops matchable`)
 
 ;; Run this AI with: csi scout.scm
 
@@ -10,7 +12,7 @@
 ;; Note: global variables names are UPPERCASE.
 
 ;; Libraries import
-(use readline loops matchable)
+(use loops matchable)
 
 ;; Read a line on stdin, split using ' ' as delim
 (define (input-line)
