@@ -1,9 +1,8 @@
-#!/usr/bin/env csi
+;; Run this AI with: csi -s scout.scm ID
+;; where ID is the number affected to the ant you want this IA to control
 
 ;; Be sure that loops and matchable librairies are installed
 ;; (e.g. with `[sudo] chicken-install loops matchable list-utils`)
-
-;; Run this AI with: csi scout.scm
 
 ;; This AI is meant to explore the map
 ;; If it encounter a enemy ant, it will run away from it
@@ -119,6 +118,8 @@
 
 ;;;; Main loop
 
+(define ANT-ID (string->number (car (command-line-arguments) ) ) )
+
 (do-forever (read-header)
             (if (= S 0) (exit) '())
             (read-ants)
@@ -128,5 +129,5 @@
             (read-map)
 ;;            (print "map:" MAP)
 ;;            (print "moves:")
-            (print (choose-move 0))
+            (print (choose-move ANT-ID))
             )
