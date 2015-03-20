@@ -68,8 +68,8 @@
                                                  MAP ) ) ) ) ) )
 
 ;; Helpers to test a cell content
-(define (rock? c) (= 2))
-(define (water? c) (= 4))
+(define (rock? c) (= 2 c))
+(define (water? c) (= 4 c))
 
 ;; Helpers to write an ant move
 (define (action a act) (string-append (number->string a) ":" act) )
@@ -92,7 +92,8 @@
 ;; Test if the cell at [(x, y)] is safe or not
 ;; FIXME: should also test if an ant is already on this cell or not
 (define (walkable-cell? x y)
-  (match-let (( (c _) (cell x y) )) (not (or (rock? c) (water? c) ) ) ) )
+  (match-let (( (_ (c _)) (cell x y) ))
+             (not (or (rock? c) (water? c) ) ) ) )
 
 ;; For a given [ant] ant, choose the next move.
 ;; FIXME: This function will keep an ant turning right / left
