@@ -20,7 +20,7 @@ func gameServer(login, password string, ais []string, gs api.GameSpec,
 
 	p := api.NewPlayer(login, password)
 
-	p.Client.SetDebug(debug)
+	p.SetDebug(debug)
 
 	for _, ai := range ais {
 		p.AIs.AddAI(ai)

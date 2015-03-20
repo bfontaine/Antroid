@@ -13,6 +13,8 @@ type Player struct {
 
 	username, password string
 
+	debug bool
+
 	status     *GameStatus
 	turn       *Turn
 	partialMap *PartialMap
@@ -33,6 +35,12 @@ func NewPlayer(username, password string) (p *Player) {
 	}
 
 	return
+}
+
+// SetDebug enables/disables the debug mode
+func (p *Player) SetDebug(debug bool) {
+	p.Client.SetDebug(debug)
+	p.debug = debug
 }
 
 // Connect connects the player to the remote server, first trying to register
@@ -255,7 +263,13 @@ func (p *Player) sendTurnStatusToAIs() {
 		))
 	}
 
-	p.AIs.SendMessage(buf.String())
+	msg := buf.String()
+
+	if p.debug {
+		fmt.Println(msg)
+	}
+
+	p.AIs.SendMessage(msg)
 }
 
 func (p *Player) playTurn() (err error) {
