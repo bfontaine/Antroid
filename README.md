@@ -51,6 +51,6 @@ and also because we, well, needed them.
 * `query` to generate query strings (Go)
 * `golbin` and `gomega` for BDD tests (Go)
 * `kingpin` for command-line arguments parsing (Go)
-* `readline` to read text (Scheme)
+* `list-utils` for list utilities (Scheme)
 * `loops` for loops (Scheme)
 * `matchable` for pattern matching (Scheme)
