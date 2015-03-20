@@ -53,7 +53,10 @@
 (define (read-map)
   (match-let (( (w h n) (input-int-line) ))
              ( set! MAP '() ) ;; reset MAP
-             ( do-times _ n (set! MAP (cons (input-int-line) MAP) ) ) ) )
+             ( do-times _ n (match-let (( (x y c s) (input-int-line) ))
+                                       ( set! MAP (cons (list (list x y)
+                                                              (list c s) )
+                                                        MAP ) ) ) ) ) )
 
 ;;;; Main loop
 
