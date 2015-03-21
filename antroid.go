@@ -69,7 +69,7 @@ var (
 	serverCmd  = app.Command("server", "Start the local game server.")
 
 	// play/server flags
-	gameDesc = app.Flag("description", "Game description.").String()
+	gameDesc = app.Flag("description", "Game description.").Default("a test").String()
 	pace     = app.Flag("pace", "Game pace.").Default("1").Int()
 	turns    = app.Flag("turns", "Number of turns.").Default("10").Int()
 	ants     = app.Flag("ants", "Number of ants per player.").Default("1").Int()
