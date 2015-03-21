@@ -8,8 +8,9 @@ import (
 // A Player represents a local game server connected to the remote one and
 // which sends and receive messages from it.
 type Player struct {
-	Client *Client
-	AIs    *AIPool
+	Client    *Client
+	AIs       *AIPool
+	Listeners *ListenersPool
 
 	username, password string
 
@@ -27,6 +28,7 @@ func NewPlayer(username, password string) (p *Player) {
 	p = &Player{
 		Client:     NewClient(),
 		AIs:        NewAIPool(),
+		Listeners:  NewListenersPool(),
 		username:   username,
 		password:   password,
 		status:     &GameStatus{},
@@ -53,8 +55,7 @@ func (p *Player) Connect() (err error) {
 		return
 	}
 
-	err = p.Client.Login()
-	return
+	return p.Client.Login()
 }
 
 // CreateAndJoinGame creates a new game from the given spec and joins it
@@ -66,8 +67,6 @@ func (p *Player) CreateAndJoinGame(gs *GameSpec) (err error) {
 	}
 
 	err = p.JoinGame(g.Identifier)
-
-	p.startAIs()
 
 	return
 }
@@ -103,7 +102,7 @@ func (p *Player) JoinGame(id GameID) (err error) {
 		return
 	}
 
-	p.startAIs()
+	p.startPlugins()
 
 	return
 }
@@ -111,7 +110,7 @@ func (p *Player) JoinGame(id GameID) (err error) {
 // PlayTurn sends the game status to all AIs and gets their feedback before
 // sending everything to the remote server
 func (p *Player) PlayTurn() (done bool, err error) {
-	p.sendTurnStatusToAIs()
+	p.sendTurnStatusToPlugins()
 	err = p.playTurn()
 	done = p.done
 
@@ -126,6 +125,7 @@ func (p *Player) PlayTurn() (done bool, err error) {
 // Quit stops all AIs and logout the player from the remote server
 func (p *Player) Quit() error {
 	p.AIs.Stop()
+	p.Listeners.Stop()
 	return p.Client.Logout()
 }
 
@@ -153,8 +153,9 @@ func (p *Player) updateStatus() (err error) {
 	return
 }
 
-func (p *Player) startAIs() {
+func (p *Player) startPlugins() {
 	p.AIs.Start()
+	p.Listeners.Start()
 }
 
 func brainNumber(a BasicAntStatus) int {
@@ -174,27 +175,26 @@ func visibilityNumber(c Cell) int {
 	return 0
 }
 
-func contentNumber(c Cell) int {
-	// see the format spec
-	switch c.Content {
-	case "grass":
-		return 0
-	case "rock":
-		return 2
-	case "water":
-		return 4
-	case "sugar":
-		return 1
-	case "mill":
-		return 3
-	case "meat":
-		return 5
-	default:
-		return 0
-	}
+var contents = map[string]int{
+	"grass": 0,
+	"rock":  2,
+	"water": 4,
+	"sugar": 1,
+	"mill":  3,
+	"meat":  5,
 }
 
-func (p *Player) sendTurnStatusToAIs() {
+func contentNumber(c Cell) (v int) {
+	// see the format spec
+	v, ok := contents[c.Content]
+	if !ok {
+		v = 0
+	}
+
+	return
+}
+
+func (p *Player) sendTurnStatusToPlugins() {
 	var buf bytes.Buffer
 
 	playing := 1
@@ -269,7 +269,8 @@ func (p *Player) sendTurnStatusToAIs() {
 		fmt.Println(msg)
 	}
 
-	p.AIs.SendMessage(msg)
+	p.AIs.SendAll(msg)
+	p.Listeners.SendAll(msg)
 }
 
 func (p *Player) playTurn() (err error) {

@@ -15,15 +15,21 @@ func exitErr(e error) {
 	os.Exit(1)
 }
 
-func gameServer(login, password string, ais []string, gs api.GameSpec,
-	debug bool) {
+func gameServer(login, password string, ais []string, listeners []string,
+	gs api.GameSpec, debug bool) {
 
 	p := api.NewPlayer(login, password)
 
 	p.SetDebug(debug)
 
 	for _, ai := range ais {
-		p.AIs.AddAI(ai)
+		words := strings.Split(ai, " ")
+		p.AIs.AddAI(words[0], words[1:]...)
+	}
+
+	for _, l := range listeners {
+		words := strings.Split(l, " ")
+		p.Listeners.AddListener(words[0], words[1:]...)
 	}
 
 	if err := p.Connect(); err != nil {
@@ -92,6 +98,7 @@ var (
 	pretty       = playCmd.Flag("pretty", "Print a map.").Bool()
 	serverCreate = serverCmd.Flag("create", "Create a new game.").Bool()
 	serverJoin   = serverCmd.Flag("join", "Join an existing game.").String()
+	serverGui    = serverCmd.Flag("gui", "Use a GUI.").String()
 )
 
 func main() {
@@ -122,7 +129,14 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Expected at least one AI\n")
 			os.Exit(1)
 		}
-		gameServer(*login, *password, *serverAIs, gs, *debug)
+
+		var plugins []string
+
+		if *serverGui != "" {
+			plugins = append(plugins, *serverGui)
+		}
+
+		gameServer(*login, *password, *serverAIs, plugins, gs, *debug)
 
 		return
 	}

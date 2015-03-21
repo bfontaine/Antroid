@@ -14,3 +14,6 @@
 *.exe
 *.test
 *.prof
+
+*.cmx
+*.cmi
