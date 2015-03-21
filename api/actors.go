@@ -100,7 +100,6 @@ func (a *Actor) start(wg *sync.WaitGroup) (err error) {
 	var msg string
 
 	for {
-		fmt.Printf("%s\n", a.input)
 		msg = <-a.input
 
 		// special "stop" message
