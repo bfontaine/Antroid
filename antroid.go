@@ -95,7 +95,6 @@ var (
 	serverAIs = serverCmd.Arg("ais", "AIs to use for this game.").Required().Strings()
 
 	// subcommands flags
-	pretty       = playCmd.Flag("pretty", "Print a map.").Bool()
 	serverCreate = serverCmd.Flag("create", "Create a new game.").Bool()
 	serverJoin   = serverCmd.Flag("join", "Join an existing game.").String()
 	serverGui    = serverCmd.Flag("gui", "Use a GUI.").String()
@@ -217,11 +216,7 @@ func main() {
 		if t, err := cl.PlayIdentifier(api.GameID(*playID), api.Commands(cmds)); err != nil {
 			exitErr(err)
 		} else {
-			if *pretty {
-				fmt.Println(t.PrettyString())
-			} else {
-				fmt.Printf("%s\n", t)
-			}
+			fmt.Printf("%s\n", t)
 		}
 	default:
 		app.Usage(os.Stderr)
