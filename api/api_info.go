@@ -1,6 +1,10 @@
 package api
 
-// APIError represents an error that can be returned by the API
+// This file describes the struct APIInfo which holds info about the remote
+// API. You shouldn't construct these structs yourself, they are returned by
+// the API Client (see `api/client.go`).
+
+// An APIError represents an error that can be returned by the API
 type APIError struct {
 	// The error code
 	Code int
@@ -8,14 +12,14 @@ type APIError struct {
 	Description string
 }
 
-// APIMethod represents an API method
+// An APIMethod represents an API method
 type APIMethod struct {
-	// The HTTP verb to use for this method
+	// The HTTP verb to use for this method (e.g. "GET" or "POST")
 	Verb string `json:"method"`
 	// A list of the stuff we need to pass to the method
 	Input []string
-	// A list of what is returned
-	// The API is broken here, see
+	// A list of what is returned. The API is not consistent here so we don't
+	// implement this.
 	// https://groups.google.com/forum/#!topic/pcomp15/qSJAm0924Ko
 	//Output []string
 	// The possible errors
@@ -24,7 +28,7 @@ type APIMethod struct {
 	Description string
 }
 
-// APIInfo represents some infos returned by the API
+// APIInfo represents info about the API, returned by… the API itself
 type APIInfo struct {
 	// All the public methods
 	Doc map[string]APIMethod
