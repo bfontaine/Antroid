@@ -73,6 +73,6 @@ let _ =
 
     (* Enemies *)
     set_color blue ;
-    List.iter (fun [x; y; _; _; _; _; _] -> square x y) enemies
+    List.iter (fun [x; y; _; _; _] -> square x y) enemies
 
   done
