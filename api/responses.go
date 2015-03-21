@@ -1,8 +1,6 @@
 package api
 
-import (
-	"encoding/json"
-)
+import "encoding/json"
 
 /*
    This file defines structures used to unmarshal JSON responses from the API.

@@ -1,5 +1,14 @@
 package api
 
+// This file describe maps, either full or partial. Full maps are returned by
+// the remote server when we ask for a game's log. We know their dimensions,
+// but when we're playing a game we only have a partial view of the full map,
+// and not their dimensions. PartialMap is here to represent a partial map.
+//
+// Maps are not stored as 2-dimensional arrays because for most of them we
+// don't have all the cells in it. We instead use a slice of `Cell`s, described
+// below.
+
 // Position is a map position
 type Position struct {
 	X int
@@ -7,12 +16,28 @@ type Position struct {
 }
 
 // A Direction is just a position with offsets instead of absolute variables
+// e.g. assuming the origin (0,0) is at the bottom-left, the North direction is
+// (0,1), the South (0,-1), the West (-1,0) and the East (1,0).
+//
+//                  North (0, 1)
+//                       ^
+//  North-West (-1, 1)   |   North-East (1, 1)
+//                     \ | /
+//  West (-1, 0) <-------+-------> East (1, 0)
+//                     / | \
+// South-West (-1, -1)   |   South-East (1, -1)
+//                       V
+//                  South (0, -1)
+//
 type Direction Position
 
 // Cell is a positioned cell
 type Cell struct {
-	Pos        Position
-	Content    string
+	// the cell's position
+	Pos Position
+	// its content ("grass", etc)
+	Content string
+	// the cell is visible if an ant was able to see it on the last turn
 	Visibility bool
 }
 
@@ -26,7 +51,6 @@ type MapInterface interface {
 
 // PartialMap is a part of a map
 type PartialMap struct {
-	// we might want to implement this with a map instead
 	Cells map[Position]*Cell
 }
 
@@ -38,7 +62,7 @@ type Map struct {
 	width, height int
 }
 
-// NewPartialMap returns a new partial map
+// NewPartialMap returns a new, empty, partial map
 func NewPartialMap() *PartialMap {
 	return &PartialMap{Cells: make(map[Position]*Cell)}
 }

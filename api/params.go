@@ -1,5 +1,9 @@
 package api
 
+// This file describes parameter structs used to send things to the server.
+// They're constructed by the client in  `api/client.go` and serialized by the
+// low-level HTTP(S) client in `api/io.go`.
+
 // NoParams is used when an API call doesn't need any parameter
 type NoParams struct{}
 

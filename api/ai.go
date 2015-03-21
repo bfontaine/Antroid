@@ -10,9 +10,7 @@ import (
 )
 
 // An AI is just an Actor
-type AI struct {
-	*Actor
-}
+type AI struct{ *Actor }
 
 // NewAI returns a pointer on a new AI, which is an actor that is both readable
 // and writable.
@@ -24,9 +22,7 @@ func NewAI(name string, arg ...string) *AI {
 
 // An AIPool is a pool of multiple AIs. This is just a wrapper around a `Stage`
 // which contains only `AI`s.
-type AIPool struct {
-	Stage
-}
+type AIPool struct{ Stage }
 
 // NewAIPool returns a pointer on a new, empty, AIPool
 func NewAIPool() *AIPool {

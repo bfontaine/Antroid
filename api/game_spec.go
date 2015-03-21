@@ -1,8 +1,6 @@
 package api
 
-import (
-	"strings"
-)
+import "strings"
 
 // GameSpec represents all the parameters needed to define a game
 type GameSpec struct {
@@ -18,8 +16,11 @@ type GameSpec struct {
 	InitialAcid   int
 }
 
-func (gs *GameSpec) toParams() GameSpecParams {
-	gsp := GameSpecParams{
+// toParams constructs a GameSpecParams from the current GameSpec, which we can
+// them pass to the HTTP(S) client in `api/io.go` to send it to the remote
+// server.
+func (gs *GameSpec) toParams() (gsp GameSpecParams) {
+	gsp = GameSpecParams{
 		Teaser:          gs.Description,
 		Pace:            gs.Pace,
 		NbTurn:          gs.Turns,
@@ -30,15 +31,22 @@ func (gs *GameSpec) toParams() GameSpecParams {
 		InitialAcid:     gs.InitialAcid,
 	}
 
+	// the API requires that the `users` field contain either "all" for a
+	// public game or a comma-separated list of usernames if it's private.
 	if gs.Public {
 		gsp.Users = "all"
 	} else {
 		gsp.Users = strings.Join(gs.Players, ",")
 	}
 
-	return gsp
+	return
 }
 
+// The code below this comment is only used to validate a `GameSpec`, to ensure
+// all parameters have valid values.
+
+// an intRange contains a min value and a max value, and used to check if an
+// integer is between them
 type intRange struct {
 	min int
 	max int
@@ -49,12 +57,12 @@ func IntRange(min, max int) intRange {
 	return intRange{min: min, max: max}
 }
 
-// Include checks if an int is included in the range
+// Include checks if an int is included in the range (including its bounds)
 func (r intRange) Include(n int) bool {
 	return r.min <= n && n <= r.max
 }
 
-// constants for the v0 API
+// These are the bounds defined by the API v0
 var (
 	paceRange          = IntRange(1, 100)
 	turnsRange         = IntRange(1, 100000)
@@ -64,7 +72,8 @@ var (
 	initialAcidRange   = IntRange(1, 1000)
 )
 
-// Validate checks that the spec validates against the spec spec
+// Validate checks that the spec validates against the spec spec (yes, there's
+// a spec for specs).
 func (gs *GameSpec) Validate() bool {
 	nbUsers := len(gs.Players)
 

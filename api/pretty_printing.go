@@ -1,5 +1,8 @@
 package api
 
+// This file adds `.String()` methods on our structs to get human-readable
+// descriptions.
+
 import (
 	"bytes"
 	"fmt"

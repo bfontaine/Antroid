@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"fmt"
+	"os"
 )
 
 // A Player represents a local game server connected to the remote one and
@@ -274,7 +275,7 @@ func (p *Player) sendTurnStatusToPlugins() {
 	msg := buf.String()
 
 	if p.debug {
-		fmt.Println(msg)
+		fmt.Fprintf(os.Stderr, "%s\n", msg)
 	}
 
 	p.AIs.SendAll(msg)
