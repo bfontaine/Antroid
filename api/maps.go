@@ -19,15 +19,15 @@ type Position struct {
 // e.g. assuming the origin (0,0) is at the bottom-left, the North direction is
 // (0,1), the South (0,-1), the West (-1,0) and the East (1,0).
 //
-//                  North (0, 1)
-//                       ^
-//  North-West (-1, 1)   |   North-East (1, 1)
-//                     \ | /
-//  West (-1, 0) <-------+-------> East (1, 0)
-//                     / | \
-// South-West (-1, -1)   |   South-East (1, -1)
-//                       V
-//                  South (0, -1)
+//                    North (0, 1)
+//                         ^
+//    North-West (-1, 1)   |   North-East (1, 1)
+//                       \ | /
+//    West (-1, 0) <-------+-------> East (1, 0)
+//                       / | \
+//   South-West (-1, -1)   |   South-East (1, -1)
+//                         V
+//                    South (0, -1)
 //
 type Direction Position
 
