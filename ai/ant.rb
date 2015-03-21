@@ -49,15 +49,21 @@ module AI
 
     def turn
       read_message
-
       log "go!"
-      write "0:forward\n"
+
+      cmd = @ants.map { |a| "#{a}:forward" }.join(",")
+      write "#{cmd}\n"
     rescue EOFError
       log "that's the end."
       @end = true
     end
 
     def run(log)
+      @ants = [0]
+      if ARGV.size > 0
+        @ants = (0..(ARGV[0].to_i-1)).to_a
+      end
+
       File.open(log, "a") do |f|
         @_log = f
         @end = false
