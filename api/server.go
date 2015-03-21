@@ -25,7 +25,7 @@ type Player struct {
 
 // NewPlayer returns a pointer on a new Player
 func NewPlayer(username, password string) (p *Player) {
-	p = &Player{
+	return &Player{
 		Client:     NewClient(),
 		AIs:        NewAIPool(),
 		Listeners:  NewListenersPool(),
@@ -35,8 +35,6 @@ func NewPlayer(username, password string) (p *Player) {
 		turn:       &EmptyTurn,
 		partialMap: NewPartialMap(),
 	}
-
-	return
 }
 
 // SetDebug enables/disables the debug mode
@@ -175,6 +173,7 @@ func visibilityNumber(c Cell) int {
 	return 0
 }
 
+// see the format spec
 var contents = map[string]int{
 	"grass": 0,
 	"rock":  2,
@@ -185,7 +184,6 @@ var contents = map[string]int{
 }
 
 func contentNumber(c Cell) (v int) {
-	// see the format spec
 	v, ok := contents[c.Content]
 	if !ok {
 		v = 0
@@ -203,8 +201,6 @@ func (p *Player) sendTurnStatusToPlugins() {
 		playing = 0
 	}
 
-	otherAnts := make(map[Position]BasicAntStatus)
-
 	buf.WriteString(fmt.Sprintf("%d %d %d %d\n",
 		p.turn.Number,                    // T
 		p.status.Game.Spec.AntsPerPlayer, // A
@@ -212,10 +208,12 @@ func (p *Player) sendTurnStatusToPlugins() {
 		playing,                          // S
 	))
 
+	var visibleAnts, enemyAnts []BasicAntStatus
+
 	for _, ant := range p.turn.AntsStatuses {
-		// save other visible ants
-		for _, other := range ant.OtherVisibleAnts() {
-			otherAnts[other.Pos] = other
+		// save visible ants
+		for _, visible := range ant.VisibleAnts {
+			visibleAnts = append(visibleAnts, visible)
 		}
 
 		// update the current map
@@ -235,10 +233,20 @@ func (p *Player) sendTurnStatusToPlugins() {
 		))
 	}
 
-	// N
-	buf.WriteString(fmt.Sprintf("%d\n", len(otherAnts)))
+	// construct enemyAnts as all visible ants minus our ones
+	for _, visible := range visibleAnts {
+		for _, ant := range p.turn.AntsStatuses {
+			if visible == ant.BasicAntStatus {
+				continue
+			}
+		}
+		enemyAnts = append(enemyAnts, visible)
+	}
 
-	for _, ant := range otherAnts {
+	// N
+	buf.WriteString(fmt.Sprintf("%d\n", len(enemyAnts)))
+
+	for _, ant := range enemyAnts {
 		buf.WriteString(fmt.Sprintf("%d %d %d %d %d\n",
 			ant.Pos.X,        // X
 			ant.Pos.Y,        // Y
