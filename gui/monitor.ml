@@ -32,6 +32,10 @@ let _ =
   (* Yes, we are setting the title of the window. *)
   set_window_title "Antroid" ;
 
+  (* Disable the automatic synchronization in order to draw the whole
+   * map before refreshing screen. *)
+  auto_synchronize false ;
+
   (* Loop until the game is over. *)
   while true do
 
@@ -58,7 +62,7 @@ let _ =
     let side = min (scr_w / w) (scr_h / h) in
 
     (* Draw a black rectangle, otherwise background is white. *)
-    clear_graph () ; set_color black ; fill_rect 0 0 scr_w scr_h ;
+    set_color black ; fill_rect 0 0 scr_w scr_h ;
 
     (* Helper: draw a square at [(x, y)]. *)
     let square x y = fill_rect (x * side) (y * side) side side in
@@ -73,6 +77,9 @@ let _ =
 
     (* Enemies *)
     set_color blue ;
-    List.iter (fun [x; y; _; _; _] -> square x y) enemies
+    List.iter (fun [x; y; _; _; _] -> square x y) enemies ;
+
+    (* Refresh the screen. *)
+    synchronize ()
 
   done
