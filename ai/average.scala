@@ -2,18 +2,13 @@ object Client
 {
 
   var agents : Array[AIAgent] = Array()
-  var play_function = play_init
+//  var play_function = play_init
 
   def play () = 
     {
-      do {
-	play_function
-      } while (GameInfo.playing)
-    }
-
-  def init () = 
-    {
-      
+//      do {
+//	play_function
+//      } while (GameInfo.playing)
     }
 
   def play_turn () : Unit = 
@@ -33,20 +28,25 @@ object Client
       // computing commands and printing them
       printf(getCommands())
       // changing looping method
-      play_function = play_turn
+//      play_function = play_turn
     }
 
   def getCommands () : String = 
     {
-      val n = agents.size - 1
-      val cmd = for (i <- 0 to n) yield "$i:rest,"
-      return cmd+"$n:rest"
+      val l = (0 until agents.size).toList
+      val cmds = for (i <- l) yield ""+i+":rest"
+      return cmds.mkString(",")
     }
 
-  def main (args: Array[String]) 
-  {
-    getCommands()
-  }
+  def main(args: Array[String]) {
+    println("starting client")
+    agents = Array.tabulate(GameInfo.antsPerPlayer)(n => new AIAgent(n))
+    val s = agents.length
+    printf(s+" commands: ")
+    println(getCommands())
+    println("ending client")
+ 
+ }
 
 }
 
@@ -140,7 +140,7 @@ object GameInfo
   // general game information
   private var _turnId: Int = 0
   def turnId = _turnId
-  private var _antsPerPlayer: Int = 0
+  private var _antsPerPlayer: Int = 7
   def antsPerPlayer = _antsPerPlayer
   private var _nbPlayers: Int = 0
   def nbPlayers = _nbPlayers
