@@ -37,9 +37,11 @@ turn() {
     done
   fi
 
+  # get a random number in (0,1,2,3)
   r=${RANDOM}
   let "r %= 4"
 
+  # return the command
   case "$r" in
     0) echo "0:right" ;;
     1) echo "0:left" ;;
@@ -48,6 +50,7 @@ turn() {
   esac
 }
 
+# play until it's the end
 while true; do
   turn
 done

@@ -1,24 +1,31 @@
 #! /usr/bin/env ruby
 # -*- coding: UTF-8 -*-
 
+# This AI doesn't do anything except going forward. It takes an optional
+# argument, the number of ants.
+
 module AI
   class << self
 
+    # read the next line from stdin and return a list of integers
     def next_line
       $stdin.readline.chomp.split(" ").map(&:to_i)
     end
 
+    # write a line on stdout
     def write(s)
       $stdout.write s
       $stdout.flush
     end
 
+    # log a line in our file log
     def log(s)
       s += "\n" unless s.end_with? "\n"
       @_log.write s
       @_log.flush
     end
 
+    # read a message from stdin
     def read_message
       log "reading:"
 
@@ -47,6 +54,7 @@ module AI
       end
     end
 
+    # play a turn
     def turn
       read_message
       log "go!"
@@ -58,6 +66,7 @@ module AI
       @end = true
     end
 
+    # run the AI. `log` is a file for the log.
     def run(log)
       @ants = [0]
       if ARGV.size > 0
@@ -74,4 +83,5 @@ module AI
   end
 end
 
+# let's start it
 AI.run "/tmp/rb-ai.log"
