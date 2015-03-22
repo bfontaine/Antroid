@@ -82,6 +82,7 @@ object GameInfo
   private var _oldEnemies : List[Ant] = List()
 
   // map
+  private var map : ArrayBuffer[]
 
   /*
    * Tries to read information on stdin in order to update state
@@ -233,12 +234,12 @@ class AIAgent
   var state : AIState = Wait
 
   def act () = state match {
-    case Wait => do_wait
-      case Explore => do_explore
-	case Retreat => do_retreat
-	  case Battle => do_battle
-	    case Unite(n) => do_unite(n)
-	      case _ => println("Unknown state")
+    case Wait => do_wait;
+    case Explore => do_explore;
+    case Retreat => do_retreat;
+    case Battle => do_battle;
+    case Unite(n) => do_unite(n);
+    case _ => println("Unknown state")
   }
 
   def changeState (s: AIState) = { state = s; this }
