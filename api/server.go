@@ -39,6 +39,9 @@ type Player struct {
 	status *GameStatus
 	// The current turn
 	turn *Turn
+	// the number of turns, which we can't get from the server. The only way to
+	// have it is to remember it when we create the game.
+	turns int
 	// The map as we know it. This is updated at each turn
 	partialMap *PartialMap
 
@@ -66,6 +69,11 @@ func (p *Player) SetDebug(debug bool) {
 	p.debug = debug
 }
 
+// Done returns true if the game ended
+func (p *Player) Done() bool {
+	return p.done
+}
+
 // Connect connects the player to the remote server, first trying to register
 // its credentials.
 func (p *Player) Connect() (err error) {
@@ -86,6 +94,9 @@ func (p *Player) CreateAndJoinGame(gs *GameSpec) (err error) {
 	if g, err = p.Client.CreateGame(gs); err != nil {
 		return
 	}
+
+	// remember the number of turns
+	p.turns = gs.Turns
 
 	err = p.JoinGame(g.Identifier)
 
@@ -123,6 +134,12 @@ func (p *Player) JoinGame(id GameID) (err error) {
 	p.turn, err = p.Client.PlayIdentifier(p.status.Identifier, commands)
 
 	if err != nil {
+		return
+	}
+
+	// exit if there's only one turn
+	if p.turn.Number == p.turns {
+		p.done = true
 		return
 	}
 
