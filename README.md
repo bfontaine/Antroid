@@ -18,6 +18,8 @@
 
     make
 
+See also `docs/hacking.md`.
+
 ## Dependencies
 
 ### Go
@@ -41,6 +43,10 @@ Now reload your shell and run:
 
 If you don’t have access to the GitHub repo, just copy the directory in
 `$GOPATH/src/github.com/bfontaine/antroid` and you’ll be fine.
+
+Then run:
+
+    make deps
 
 ### Libraries
 
