@@ -1,35 +1,73 @@
 package api
 
+// This file describes our local game server, implemented as a `Player` struct.
+
 import (
 	"bytes"
 	"fmt"
+	"os"
 )
 
+// A Player represents a local game server connected to the remote one and
+// which sends and receive messages from it. It used an API client, an AI pool
+// and a Listeners pool to communicate with the remote server, send turn infos
+// to the AIs and get their commands back, and send turn infos to the plugins.
+// One of these plugins can be the GUI, for example.
+//
+// See docs/ai_protocol.md for the protocol we use to communicate with AIs and
+// Plugin Listeners.
+//
+// A player represents one player in one game. At each turn, it'll send a
+// command to play followed by a call to get the game's status. The first time,
+// it'll send a dummy play command where all ants are resting just to get their
+// positions, since we don't have ants' positions when creating/joining a game.
 type Player struct {
+	// API client
 	Client *Client
-	AIs    *AIPool
+	// All AIs
+	AIs *AIPool
+	// All plugin Listeners
+	Listeners *ListenersPool
 
+	// User credentials
 	username, password string
 
-	status     *GameStatus
-	turn       *Turn
+	// If this is true we'll print more info
+	debug bool
+
+	// The current game status
+	status *GameStatus
+	// The current turn
+	turn *Turn
+	// The map as we know it. This is updated at each turn
 	partialMap *PartialMap
+
+	// This will be true when the game will end
+	done bool
 }
 
+// NewPlayer returns a pointer on a new Player
 func NewPlayer(username, password string) (p *Player) {
-	p = &Player{
+	return &Player{
 		Client:     NewClient(),
 		AIs:        NewAIPool(),
+		Listeners:  NewListenersPool(),
 		username:   username,
 		password:   password,
 		status:     &GameStatus{},
 		turn:       &EmptyTurn,
 		partialMap: NewPartialMap(),
 	}
-
-	return
 }
 
+// SetDebug enables/disables the debug mode
+func (p *Player) SetDebug(debug bool) {
+	p.Client.SetDebug(debug)
+	p.debug = debug
+}
+
+// Connect connects the player to the remote server, first trying to register
+// its credentials.
 func (p *Player) Connect() (err error) {
 	// try to register, just in case the credentials don't exist
 	err = p.Client.RegisterWithCredentials(p.username, p.password)
@@ -38,10 +76,10 @@ func (p *Player) Connect() (err error) {
 		return
 	}
 
-	err = p.Client.Login()
-	return
+	return p.Client.Login()
 }
 
+// CreateAndJoinGame creates a new game from the given spec and joins it
 func (p *Player) CreateAndJoinGame(gs *GameSpec) (err error) {
 	var g *Game
 
@@ -51,17 +89,17 @@ func (p *Player) CreateAndJoinGame(gs *GameSpec) (err error) {
 
 	err = p.JoinGame(g.Identifier)
 
-	p.startAIs()
-
 	return
 }
 
+// JoinGame joins an existing game
 func (p *Player) JoinGame(id GameID) (err error) {
 
 	if err = p.Client.JoinGameIdentifier(id); err != nil {
 		return
 	}
 
+	// we request the game's status to have all its parameters
 	if p.status, err = p.Client.GetGameIdentifierStatus(id); err != nil {
 		return
 	}
@@ -80,36 +118,80 @@ func (p *Player) JoinGame(id GameID) (err error) {
 	}
 
 	commands := Commands(restCmd.String())
+
+	// "play" with this rest command
 	p.turn, err = p.Client.PlayIdentifier(p.status.Identifier, commands)
 
 	if err != nil {
 		return
 	}
 
-	p.startAIs()
+	// start all plugins, including AIs
+	p.startPlugins()
 
 	return
 }
 
-func (p *Player) PlayTurn() error {
-	p.sendTurnStatusToAIs()
-	return p.playTurn()
+// PlayTurn sends the game status to all AIs and gets their feedback before
+// sending everything to the remote server
+func (p *Player) PlayTurn() (done bool, err error) {
+	p.sendTurnStatusToPlugins()
+	err = p.playTurn()
+	done = p.done
+
+	// end of game
+	if done && err == ErrGameNotPlaying {
+		err = nil
+	}
+
+	return
 }
 
+// Quit stops all AIs and Listeners and logout the player from the remote
+// server
 func (p *Player) Quit() error {
 	p.AIs.Stop()
+	p.Listeners.Stop()
 	return p.Client.Logout()
 }
 
+// PrintScores prints the current scores
+func (p *Player) PrintScores() {
+	var usernameMaxSize int
+
+	// get the longest username
+	for username := range p.status.Score {
+		usernameSize := len(username)
+
+		if usernameSize > usernameMaxSize {
+			usernameMaxSize = usernameSize
+		}
+	}
+
+	// craft the output format to be large enough to contain the longest
+	// username
+	format := fmt.Sprintf("%%-%ds: %%d\n", usernameMaxSize)
+
+	// print each score
+	for user, score := range p.status.Score {
+		fmt.Printf(format, user, score)
+	}
+}
+
+// updateStatus calls the remote server for the game status and updates the
+// player's one.
 func (p *Player) updateStatus() (err error) {
 	p.status, err = p.Client.GetGameIdentifierStatus(p.status.Identifier)
 	return
 }
 
-func (p *Player) startAIs() {
+// startPlugins starts all AIs and all Listeners
+func (p *Player) startPlugins() {
 	p.AIs.Start()
+	p.Listeners.Start()
 }
 
+// internal helper to get a number for an ant's brain state
 func brainNumber(a BasicAntStatus) int {
 	if a.Brain == "controlled" {
 		return 1
@@ -119,6 +201,7 @@ func brainNumber(a BasicAntStatus) int {
 	return 0
 }
 
+// internal helper to get a number for a cell's visibility
 func visibilityNumber(c Cell) int {
 	if c.Visibility {
 		return 1
@@ -127,36 +210,38 @@ func visibilityNumber(c Cell) int {
 	return 0
 }
 
-func contentNumber(c Cell) int {
-	// see the format spec
-	switch c.Content {
-	case "grass":
-		return 0
-	case "rock":
-		return 2
-	case "water":
-		return 4
-	case "sugar":
-		return 1
-	case "mill":
-		return 3
-	case "meat":
-		return 5
-	default:
-		return 0
-	}
+// cell contents, see `docs/ai_protocol.md`
+var contents = map[string]int{
+	"grass": 0,
+	"rock":  2,
+	"water": 4,
+	"sugar": 1,
+	"mill":  3,
+	"meat":  5,
 }
 
-func (p *Player) sendTurnStatusToAIs() {
+// internal helper to get a number for a cell's content
+func contentNumber(c Cell) (v int) {
+	v, ok := contents[c.Content]
+	if !ok {
+		v = 0
+	}
+
+	return
+}
+
+// constructs a message describing the current turn (see `docs/ai_protocol.md`)
+// and send it to all plugins and AIs.
+func (p *Player) sendTurnStatusToPlugins() {
 	var buf bytes.Buffer
 
 	playing := 1
 	if p.status.Status == "over" {
+		p.done = true
 		playing = 0
 	}
 
-	otherAnts := make(map[Position]BasicAntStatus)
-
+	// header
 	buf.WriteString(fmt.Sprintf("%d %d %d %d\n",
 		p.turn.Number,                    // T
 		p.status.Game.Spec.AntsPerPlayer, // A
@@ -164,10 +249,13 @@ func (p *Player) sendTurnStatusToAIs() {
 		playing,                          // S
 	))
 
+	var visibleAnts, enemyAnts []BasicAntStatus
+
+	// all our ants
 	for _, ant := range p.turn.AntsStatuses {
-		// save other visible ants
-		for _, other := range ant.OtherVisibleAnts() {
-			otherAnts[other.Pos] = other
+		// save visible ants
+		for _, visible := range ant.VisibleAnts {
+			visibleAnts = append(visibleAnts, visible)
 		}
 
 		// update the current map
@@ -187,10 +275,22 @@ func (p *Player) sendTurnStatusToAIs() {
 		))
 	}
 
-	// N
-	buf.WriteString(fmt.Sprintf("%d\n", len(otherAnts)))
+Visible:
+	// construct enemyAnts as all visible ants minus our ones
+	for _, visible := range visibleAnts {
+		for _, ant := range p.turn.AntsStatuses {
+			if visible.Eq(ant.BasicAntStatus) {
+				continue Visible
+			}
+		}
+		enemyAnts = append(enemyAnts, visible)
+	}
 
-	for _, ant := range otherAnts {
+	// N enemy ants
+	buf.WriteString(fmt.Sprintf("%d\n", len(enemyAnts)))
+
+	// enemy ants
+	for _, ant := range enemyAnts {
 		buf.WriteString(fmt.Sprintf("%d %d %d %d %d\n",
 			ant.Pos.X,        // X
 			ant.Pos.Y,        // Y
@@ -200,12 +300,14 @@ func (p *Player) sendTurnStatusToAIs() {
 		))
 	}
 
+	// map header
 	buf.WriteString(fmt.Sprintf("%d %d %d\n",
 		p.partialMap.Width(),    // W
 		p.partialMap.Height(),   // H
 		len(p.partialMap.Cells), // N
 	))
 
+	// map cells
 	for _, cell := range p.partialMap.Cells {
 		buf.WriteString(fmt.Sprintf("%d %d %d %d\n",
 			cell.Pos.X,              // X
@@ -215,9 +317,20 @@ func (p *Player) sendTurnStatusToAIs() {
 		))
 	}
 
-	p.AIs.SendMessage(buf.String())
+	msg := buf.String()
+
+	if p.debug {
+		// print the message if we're debugging
+		fmt.Fprintf(os.Stderr, "%s\n", msg)
+	}
+
+	// send it
+	p.AIs.SendAll(msg)
+	p.Listeners.SendAll(msg)
 }
 
+// playTurn gets the command to use from all AIs, send it to the server and
+// updates the local game status.
 func (p *Player) playTurn() (err error) {
 	cmd := p.AIs.GetCommandResponse()
 

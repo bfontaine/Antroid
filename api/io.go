@@ -1,20 +1,24 @@
 package api
 
+// This file describes a low-level HTTP(S) client, `Httclient`, which does all
+// requests to the remote server.
+
 import (
 	"fmt"
 	"github.com/franela/goreq"
 	"github.com/google/go-querystring/query"
 	"net/http/cookiejar"
+	"os"
 	"strings"
 )
 
-/* The base URL of all API calls */
+// The base URL of all API calls
 const defaultBaseURL = "https://yann.regis-gianas.org/antroid"
 
-/* The API version we support */
+// The API version we support
 const defaultAPIVersion = "0"
 
-/* The User-Agent header we use in all requests */
+// The User-Agent header we use in all requests
 const defaultUserAgent = "Antroid w/ Go, Cailloux&Fontaine&Galichet&Sagot"
 
 // Httclient is an HTTP client for the API server
@@ -59,7 +63,6 @@ func getError(code int) error {
 }
 
 // Make an HTTP call to the remote server and return its response body.
-// Don't forget to close it if it's not nil.
 func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 	b = &Body{}
 
@@ -101,6 +104,7 @@ func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 		req.Body = queryString
 	}
 
+	// do the request
 	res, err := req.Do()
 
 	if err != nil {
@@ -108,33 +112,39 @@ func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 		return
 	}
 
+	// remember to close the body
 	if res.Body != nil {
 		defer res.Body.Close()
 	}
 
+	// HTTP errors
 	if b.StatusCode = res.StatusCode; b.StatusCode != 200 {
 		b.err = getError(b.StatusCode)
 		return
 	}
 
+	// parse the response
 	var resp baseResponse
 
 	b.err = res.Body.FromJsonTo(&resp)
 
 	if h.debug {
-		fmt.Printf("\n==> %s\n\n", resp)
+		// print the response if we're debugging
+		fmt.Fprintf(os.Stderr, "\n==> %s\n\n", resp)
 	}
 
 	if b.err != nil {
 		return
 	}
 
+	// set the body's content. This a JSON string which will be decoded later
 	b.Content = &resp.Response
 
 	switch resp.Status {
 	case "completed":
 		// nothing here, everything's fine
 	case "error":
+		// if the server returned an error code, parse it and return it
 		var errorResp errorResponse
 
 		if b.err = b.DumpTo(&errorResp); b.err == nil {
@@ -142,30 +152,32 @@ func (h *Httclient) call(method, call string, data interface{}) (b *Body) {
 		}
 
 	default:
+		// this shouldn't happen
 		b.err = ErrUnknown
 	}
 
 	return
 }
 
+// HTTP verbs
 const (
 	get  = "GET"
 	post = "POST"
 )
 
+// get is a shortcut for .call with a GET verb
 func (h *Httclient) get(call string, data interface{}) *Body {
 	return h.call(get, call, data)
 }
 
+// post is a shortcut for .call with a POST verb
 func (h *Httclient) post(call string, data interface{}) *Body {
 	return h.call(post, call, data)
 }
 
-/*
-   Each method below perform a call to one endpoint. We expose them instead of
-   the generic .call method to be able to type-check the parameters of each
-   call.
-*/
+// Each method below perform a call to one endpoint. We expose them instead of
+// the generic .call method to be able to type-check the parameters of each
+// call.
 
 // CallAPI performs a call to /api.
 func (h *Httclient) CallAPI() *Body { return h.get("/api", NoParams{}) }

@@ -1,135 +1,43 @@
 package api
 
+// This files describe how we handle external AIs. See `api/actors.go` for the
+// low-level operations. An `AI` is just a wrapper for an `Actor` and an
+// `AIPool` is a `Stage` that contains only `AI`s.
+
 import (
-	"bufio"
-	"bytes"
-	"io"
 	"os/exec"
 	"strings"
 )
 
-const (
-	STOP = "STOP"
-)
+// An AI is just an Actor
+type AI struct{ *Actor }
 
-// An AI struct represents an external AI command
-type AI struct {
-	c      *exec.Cmd
-	Input  chan string
-	Output chan string
-}
-
-// NewAI returns a pointer on a new AI
+// NewAI returns a pointer on a new AI, which is an actor that is both readable
+// and writable.
 func NewAI(name string, arg ...string) *AI {
 	return &AI{
-		c:      exec.Command(name, arg...),
-		Input:  make(chan string),
-		Output: make(chan string),
+		Actor: NewActor(exec.Command(name, arg...), true, true),
 	}
 }
 
-// Start starts the AI. You should start it in a goroutine.
-func (ai *AI) Start() (err error) {
+// An AIPool is a pool of multiple AIs. This is just a wrapper around a `Stage`
+// which contains only `AI`s.
+type AIPool struct{ Stage }
 
-	stdin, err := ai.c.StdinPipe()
-
-	if err != nil {
-		return
-	}
-
-	stdout, err := ai.c.StdoutPipe()
-
-	if err != nil {
-		return
-	}
-
-	defer stdin.Close()
-
-	if err = ai.c.Start(); err != nil {
-		return
-	}
-
-	stdoutReader := bufio.NewReader(stdout)
-
-	var buf []byte
-	var msg string
-
-	for {
-
-		msg = <-ai.Input
-
-		if msg == STOP {
-			break
-		}
-
-		if _, err = io.WriteString(stdin, msg); err != nil {
-			break
-		}
-
-		if buf, err = stdoutReader.ReadSlice('\n'); err != nil {
-			break
-		}
-
-		ai.Output <- string(buf)
-	}
-
-	ai.c.Wait()
-
-	close(ai.Input)
-	close(ai.Output)
-
-	return
-}
-
-// An AIPool is a pool of multiple AIs
-type AIPool struct {
-	ais []*AI
-}
-
-// NewAIPool returns a new empty AIPool
+// NewAIPool returns a pointer on a new, empty, AIPool
 func NewAIPool() *AIPool {
 	return &AIPool{
-		ais: []*AI{},
+		Stage: *NewStage(),
 	}
 }
 
 // AddAI adds another AI to the pool
 func (pool *AIPool) AddAI(name string, args ...string) {
-	pool.ais = append(pool.ais, NewAI(name, args...))
+	pool.AddActor(NewAI(name, args...))
 }
 
-// Start starts all AIs in separate goroutines
-func (pool *AIPool) Start() {
-	for _, ai := range pool.ais {
-		go ai.Start()
-	}
-}
-
-// SendMessage sends a message to all AIs
-func (pool *AIPool) SendMessage(msg string) {
-	for _, ai := range pool.ais {
-		ai.Input <- msg
-	}
-}
-
-// GetCommandResponse reads the messages from all AIs
+// GetCommandResponse reads the messages from all AIs and return them all as a
+// Commands object that can be sent to the remote server.
 func (pool *AIPool) GetCommandResponse() (resp Commands) {
-	var buf bytes.Buffer
-
-	first := true
-
-	for _, ai := range pool.ais {
-		if !first {
-			buf.WriteString(",")
-		}
-		line := <-ai.Output
-		buf.WriteString(strings.TrimSuffix(line, "\n"))
-		first = false
-	}
-
-	return Commands(buf.String())
-}
-
-func (pool *AIPool) Stop() {
-	pool.SendMessage(STOP)
+	return Commands(strings.Join(pool.ReadAll(), ","))
 }

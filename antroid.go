@@ -1,124 +1,160 @@
 package main
 
-// this executable is really a sandbox for now
-
 import (
-	"flag"
 	"fmt"
 	"github.com/bfontaine/antroid/api"
+	"gopkg.in/alecthomas/kingpin.v1"
 	"os"
 	"strings"
 )
 
+// exitErr logs an error and exit
 func exitErr(e error) {
-	fmt.Printf("Error: %v\n", e)
+	fmt.Fprintf(os.Stderr, "Error: %v\n", e)
 	os.Exit(1)
 }
 
-/*
-func gameServer() { // just a test for now
-	pool := api.NewAIPool()
+// gameServer starts a local game server
+func gameServer(login, password string, ais []string, listeners []string,
+	gs api.GameSpec, debug bool) {
 
-	// sample program:
-	//   #! /bin/bash
-	//   while true; do read cmd;sleep $1;echo "$1:rest";done
-	pool.AddAI("/tmp/foo.sh", "3")
-	pool.AddAI("/tmp/foo.sh", "4")
-	pool.AddAI("/tmp/foo.sh", "2")
-	pool.AddAI("/tmp/foo.sh", "1")
+	// create the server
+	p := api.NewPlayer(login, password)
 
-	pool.Start()
+	p.SetDebug(debug)
 
-	pool.SendMessage("yolo les filles\n")
-	fmt.Printf("output : '%s'\n", pool.GetCommandResponse())
+	// load the AIs
+	for _, ai := range ais {
+		words := strings.Split(ai, " ")
+		p.AIs.AddAI(words[0], words[1:]...)
+	}
 
-	pool.SendMessage("yolo les filles\n")
-	fmt.Printf("output : '%s'\n", pool.GetCommandResponse())
-}
-*/
-func gameServer(login, passwd, ai string, gs *api.GameSpec) {
-	p := api.NewPlayer(login, passwd)
+	// load the plugin listeners
+	for _, l := range listeners {
+		words := strings.Split(l, " ")
+		p.Listeners.AddListener(words[0], words[1:]...)
+	}
 
-	p.Client.SetDebug(true)
-
-	p.AIs.AddAI(ai)
-
+	// connect to the remote server
 	if err := p.Connect(); err != nil {
 		fmt.Printf("%s\n", err)
 		return
 	}
 
-	if err := p.CreateAndJoinGame(gs); err != nil {
+	// create a game
+	if err := p.CreateAndJoinGame(&gs); err != nil {
 		fmt.Printf("%s\n", err)
 		return
 	}
 
+	// game loop
 	for {
-		if err := p.PlayTurn(); err != nil {
+		if done, err := p.PlayTurn(); err != nil {
 			fmt.Printf("%s\n", err)
+			return
+		} else if done {
+			fmt.Println("End of game.")
+			fmt.Println("Scores:")
+			p.PrintScores()
 			return
 		}
 	}
 }
 
+var (
+	app = kingpin.New("antroid", "A command-line Antroid API tool and game server")
+
+	// global flags
+	debug    = app.Flag("debug", "Enable debug mode.").Bool()
+	login    = app.Flag("login", "Login.").Default("ww").String()
+	password = app.Flag("password", "Password.").Default("a").String()
+
+	// subcommands
+	apiCmd     = app.Command("api", "Show all remote API methods.")
+	whoCmd     = app.Command("whoami", "Show the logged user's name.")
+	gamesCmd   = app.Command("games", "Show all visible games.")
+	createCmd  = app.Command("create", "Create a new game.")
+	statusCmd  = app.Command("status", "Get a game status.")
+	destroyCmd = app.Command("destroy", "Destroy a game.")
+	joinCmd    = app.Command("join", "Join a game.")
+	playCmd    = app.Command("play", "Play a turn in a game.")
+	serverCmd  = app.Command("server", "Start the local game server.")
+
+	// play/server flags
+	gameDesc = app.Flag("description", "Game description.").Default("a test").String()
+	pace     = app.Flag("pace", "Game pace.").Default("1").Int()
+	turns    = app.Flag("turns", "Number of turns.").Default("10").Int()
+	ants     = app.Flag("ants", "Number of ants per player.").Default("1").Int()
+	maxP     = app.Flag("max-players", "Max number of players.").Default("1").Int()
+	minP     = app.Flag("min-players", "Min number of players.").Default("1").Int()
+	energy   = app.Flag("energy", "Initial energy.").Default("100").Int()
+	acid     = app.Flag("acid", "Initial acid.").Default("100").Int()
+	players  = app.Flag("player", "Restrict games to this player "+
+		"(can be used multiple times).").Strings()
+
+	// subcommands args
+	statusID  = statusCmd.Arg("id", "game ID").Required().String()
+	destroyID = destroyCmd.Arg("id", "game ID").Required().String()
+	joinID    = joinCmd.Arg("id", "game ID").Required().String()
+	playID    = playCmd.Arg("id", "game ID").Required().String()
+	playCmds  = playCmd.Arg("commands", "Commands to use for this turn.").Required().Strings()
+	serverAIs = serverCmd.Arg("ais", "AIs to use for this game.").Required().Strings()
+
+	// subcommands flags
+	serverCreate = serverCmd.Flag("create", "Create a new game.").Bool()
+	serverGui    = serverCmd.Flag("gui", "Use a GUI.").String()
+	//serverJoin = serverCmd.Flag("join", "Join an existing game.").String()
+)
+
 func main() {
-	apiMethods := flag.Bool("methods", false, "show all API methods")
-	whoAmI := flag.Bool("whoami", false, "verify that the user is logged")
-	gamesList := flag.Bool("games", false, "list all the visible games")
-	createGame := flag.Bool("create", false, "create a game")
+	app.Version("0.1.0")
 
-	// flags with game ids
-	gameStatusId := flag.String("status", "", "get a game's status")
-	destroyId := flag.String("destroy", "", "destroy a game")
-	joinId := flag.String("join", "", "join a game")
-	playId := flag.String("play", "", "play a game")
+	parsed := kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	// -play options
-	playCmds := flag.String("cmds", "", "play with this commands")
-	prettyMap := flag.Bool("pretty", false, "print a pretty map when playing")
+	gs := api.GameSpec{
+		Description:   *gameDesc,
+		Pace:          *pace,
+		Turns:         *turns,
+		AntsPerPlayer: *ants,
+		MaxPlayers:    *maxP,
+		MinPlayers:    *minP,
+		InitialEnergy: *energy,
+		InitialAcid:   *acid,
+	}
 
-	gs := api.GameSpec{Public: true}
+	// construct the game spec
+	if len(*players) == 0 {
+		gs.Public = true
+	} else {
+		gs.Players = *players
+	}
 
-	// -create options
-	flag.StringVar(&gs.Description, "description", "", "game description")
-	flag.IntVar(&gs.Pace, "pace", 1, "pace")
-	flag.IntVar(&gs.Turns, "turns", 10, "turns")
-	flag.IntVar(&gs.AntsPerPlayer, "ants", 1, "ants per player")
-	flag.IntVar(&gs.MaxPlayers, "max", 1, "max players")
-	flag.IntVar(&gs.MinPlayers, "min", 1, "min players")
-	flag.IntVar(&gs.InitialEnergy, "energy", 100, "initial energy")
-	flag.IntVar(&gs.InitialAcid, "acid", 100, "initial acid")
-
-	// general options
-	login := flag.String("login", "ww", "login")
-	passwd := flag.String("password", "a", "password")
-
-	debug := flag.Bool("debug", false, "debug mode")
-
-	server := flag.Bool("server", false, "start a server")
-
-	ai := flag.String("ai", "", "the AI to use")
-
-	flag.Parse()
-
-	if *server {
-		if *ai == "" {
-			fmt.Println("AI expected")
-			return
+	if parsed == serverCmd.FullCommand() {
+		if len(*serverAIs) == 0 {
+			fmt.Fprintf(os.Stderr, "Expected at least one AI\n")
+			os.Exit(1)
 		}
-		gameServer(*login, *passwd, *ai, &gs)
+
+		var plugins []string
+
+		if *serverGui != "" {
+			plugins = append(plugins, *serverGui)
+		}
+
+		gameServer(*login, *password, *serverAIs, plugins, gs, *debug)
+
 		return
 	}
 
 	cl := api.NewClient()
-
 	cl.SetDebug(*debug)
 
-	if err := cl.LoginWithCredentials(*login, *passwd); err != nil {
+	if err := cl.LoginWithCredentials(*login, *password); err != nil {
 		exitErr(err)
 	}
 
-	if *apiMethods {
+	switch parsed {
+	case apiCmd.FullCommand():
 		if info, err := cl.APIInfo(); err != nil {
 			exitErr(err)
 		} else {
@@ -128,17 +164,15 @@ func main() {
 			}
 			fmt.Printf("API methods: %s\n", strings.Join(keys, ", "))
 		}
-	}
 
-	if *whoAmI {
+	case whoCmd.FullCommand():
 		if s, err := cl.WhoAmI(); err != nil {
 			exitErr(err)
 		} else {
 			fmt.Printf("Username: %s\n", s)
 		}
-	}
 
-	if *gamesList {
+	case gamesCmd.FullCommand():
 		if games, err := cl.ListGames(); err != nil {
 			exitErr(err)
 		} else {
@@ -147,56 +181,51 @@ func main() {
 				fmt.Printf("- %s\n", g)
 			}
 		}
-	}
 
-	if *gameStatusId != "" {
-		gId := api.GameID(*gameStatusId)
+	case statusCmd.FullCommand():
+		gID := api.GameID(*statusID)
 
-		if gs, err := cl.GetGameIdentifierStatus(gId); err != nil {
+		if gs, err := cl.GetGameIdentifierStatus(gID); err != nil {
 			exitErr(err)
 		} else {
 			fmt.Printf("%s\n", gs)
 		}
-	}
 
-	if *destroyId != "" {
-		gId := api.GameID(*destroyId)
+	case destroyCmd.FullCommand():
+		gID := api.GameID(*destroyID)
 
-		if err := cl.DestroyGameIdentifier(gId); err != nil {
+		if err := cl.DestroyGameIdentifier(gID); err != nil {
 			exitErr(err)
 		} else {
-			fmt.Printf("Game %s successfully destroyed\n", gId)
+			fmt.Printf("Game %s successfully destroyed\n", gID)
 		}
-	}
 
-	if *joinId != "" {
-		gId := api.GameID(*joinId)
+	case joinCmd.FullCommand():
+		gID := api.GameID(*joinID)
 
-		if err := cl.JoinGameIdentifier(gId); err != nil {
+		if err := cl.JoinGameIdentifier(gID); err != nil {
 			exitErr(err)
 		} else {
-			fmt.Printf("Game %s successfully joined\n", gId)
+			fmt.Printf("Game %s successfully joined\n", gID)
 		}
-	}
 
-	if *createGame {
+	case createCmd.FullCommand():
 		if g, err := cl.CreateGame(&gs); err != nil {
 			exitErr(err)
 		} else {
 			fmt.Printf("Game %s successfully created\n", g.Identifier)
 		}
-	}
 
-	if *playId != "" {
-		if t, err := cl.PlayIdentifier(api.GameID(*playId), api.Commands(*playCmds)); err != nil {
+	case playCmd.FullCommand():
+		cmds := strings.Join(*playCmds, ",")
+
+		if t, err := cl.PlayIdentifier(api.GameID(*playID), api.Commands(cmds)); err != nil {
 			exitErr(err)
 		} else {
-			if *prettyMap {
-				fmt.Println(t.PrettyString())
-			} else {
-				fmt.Printf("%s\n", t)
-			}
+			fmt.Printf("%s\n", t)
 		}
+	default:
+		app.Usage(os.Stderr)
 	}
 
 	cl.Logout()

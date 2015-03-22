@@ -1,52 +1,57 @@
 package api
 
+// This file describes what we know after each turn
+
 // Commands is a comma-separated list of commands we give to an ant
 type Commands string
 
 // BasicAntStatus describes an ant from which we don't know much info
 type BasicAntStatus struct {
-	Pos   Position
-	Dir   Direction
+	// its position
+	Pos Position
+	// its direction
+	Dir Direction
+	// its brain stage (we know "controlled", but they are more states)
 	Brain string
+}
+
+// Eq tests if this status is equal to another
+func (as BasicAntStatus) Eq(other BasicAntStatus) bool {
+	return as.Pos.X == other.Pos.X &&
+		as.Pos.Y == other.Pos.Y &&
+		as.Dir.X == other.Dir.X &&
+		as.Dir.Y == other.Dir.Y &&
+		as.Brain == other.Brain
 }
 
 // AntStatus describes an ant
 type AntStatus struct {
+	// it inherits all fields from BasicAntStatus
 	BasicAntStatus
 
-	ID     int
+	// its ID
+	ID int
+	// its energy level
 	Energy int
-	Acid   int
+	// its acid level
+	Acid int
 
-	Vision      *PartialMap
+	// what she sees around
+	Vision *PartialMap
+	// all the ants she sees (including itself)
 	VisibleAnts []BasicAntStatus
-}
-
-// OtherVisibleAnts returns an equivalent of AntStatus.VisibleAnts, excluding
-// the ant itself. The API server gives us a list *including* the ant (which
-// sees itself).
-func (as AntStatus) OtherVisibleAnts() []BasicAntStatus {
-	var others []BasicAntStatus
-
-	for _, ant := range as.VisibleAnts {
-		if ant.Pos == as.Pos && ant.Dir == as.Dir && ant.Brain == as.Brain {
-			continue
-		}
-
-		// Note: this could be optimized, since we sees ourselves only once
-		others = append(others, ant)
-	}
-
-	return others
 }
 
 // Turn describes all the infos we have about a turn
 type Turn struct {
+	// its number
 	Number int
 
+	// all our ants' statuses
 	AntsStatuses []AntStatus
 }
 
+// EmptyTurn represents an empty turn with no ants
 var EmptyTurn = Turn{
 	Number:       0,
 	AntsStatuses: []AntStatus{},
