@@ -1,3 +1,58 @@
+object Client 
+{
+
+  var agents : Array[AIAgent] = Array()
+  var play_function = play_init
+
+  def play () = 
+    {
+      do {
+	play_function
+      } while (GameInfo.playing)
+    }
+
+  def init () = 
+    {
+      
+    }
+
+  def play_turn () : Unit = 
+    {
+      // reading game state
+      GameInfo.nextTurn ()
+      // computing commands and printing them
+      printf(getCommands())
+    }
+
+  def play_init () : Unit = 
+    {
+      // reading game state
+      GameInfo.nextTurn ()
+      // creating AIAgents if they weren't here
+      Array.tabulate(GameInfo.antsPerPlayer)(n => new AIAgent(n))
+      // computing commands and printing them
+      printf(getCommands())
+      // changing looping method
+      play_function = play_turn
+    }
+
+  def getCommands () : String = 
+    {
+      val n = agents.size - 1
+      val cmd = for (i <- 0 to n) yield "$i:rest,"
+      return cmd+"$n:rest"
+    }
+
+  def main (args: Array[String]) 
+  {
+    getCommands()
+  }
+
+}
+
+
+
+
 /**
  * Ant holds all information we can have about an ant
  */ 
@@ -287,61 +342,6 @@ class AIAgent (val id: Int)
   private def do_battle = println("I want to fight")
 
   private def do_unite (lead: Int) = println("I should join $lead")
-
-}
-
-object Client 
-{
-
-  var agents : Array[AIAgent] = Array()
-  var play_function = play_init
-
-  def play () = 
-    {
-      var finished: Boolean = false
-      while (! finished) 
-      {
-	play_function
-	finished = (GameInfo.playing == false)
-      }
-    }
-
-  def init () = 
-    {
-      
-    }
-
-  def play_turn () : Unit = 
-    {
-      // reading game state
-      GameInfo.nextTurn ()
-      // computing commands and printing them
-      printf(getCommands())
-    }
-
-  def play_init () : Unit = 
-    {
-      // reading game state
-      GameInfo.nextTurn ()
-      // creating AIAgents if they weren't here
-      Array.tabulate(GameInfo.antsPerPlayer)(n => new AIAgent(n))
-      // computing commands and printing them
-      printf(getCommands())
-      // changing looping method
-      play_function = play_turn
-    }
-
-  def getCommands () : String = 
-    {
-      val n = agents.size - 1
-      val cmd = for (i <- 0 to n) yield "$i:rest,"
-      return cmd+"$n:rest"
-    }
-
-  def main (args: Array[String]) 
-  {
-    getCommands()
-  }
 
 }
 
