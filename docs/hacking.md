@@ -110,7 +110,3 @@ Add a `case`:
         }
 
 Now re-compile, and you should be able to use it: `./antroid unplay <game id>`.
-
-## How to write a test
-
-TODO

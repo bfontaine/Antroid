@@ -1,7 +1,5 @@
 package main
 
-// this executable is really a sandbox for now
-
 import (
 	"fmt"
 	"github.com/bfontaine/antroid/api"
@@ -10,38 +8,46 @@ import (
 	"strings"
 )
 
+// exitErr logs an error and exit
 func exitErr(e error) {
-	fmt.Printf("Error: %v\n", e)
+	fmt.Fprintf(os.Stderr, "Error: %v\n", e)
 	os.Exit(1)
 }
 
+// gameServer starts a local game server
 func gameServer(login, password string, ais []string, listeners []string,
 	gs api.GameSpec, debug bool) {
 
+	// create the server
 	p := api.NewPlayer(login, password)
 
 	p.SetDebug(debug)
 
+	// load the AIs
 	for _, ai := range ais {
 		words := strings.Split(ai, " ")
 		p.AIs.AddAI(words[0], words[1:]...)
 	}
 
+	// load the plugin listeners
 	for _, l := range listeners {
 		words := strings.Split(l, " ")
 		p.Listeners.AddListener(words[0], words[1:]...)
 	}
 
+	// connect to the remote server
 	if err := p.Connect(); err != nil {
 		fmt.Printf("%s\n", err)
 		return
 	}
 
+	// create a game
 	if err := p.CreateAndJoinGame(&gs); err != nil {
 		fmt.Printf("%s\n", err)
 		return
 	}
 
+	// game loop
 	for {
 		if done, err := p.PlayTurn(); err != nil {
 			fmt.Printf("%s\n", err)
@@ -96,8 +102,8 @@ var (
 
 	// subcommands flags
 	serverCreate = serverCmd.Flag("create", "Create a new game.").Bool()
-	serverJoin   = serverCmd.Flag("join", "Join an existing game.").String()
 	serverGui    = serverCmd.Flag("gui", "Use a GUI.").String()
+	//serverJoin = serverCmd.Flag("join", "Join an existing game.").String()
 )
 
 func main() {
