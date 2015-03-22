@@ -54,6 +54,10 @@ quel plugin sur le serveur de jeu. Nous avons par exemple une interface
 graphique écrite en OCaml (`gui/monitor.ml`) qui reçois les informations de
 chaque tour et dessine la carte.
 
+Ces acteurs fonctionnent en parallèle du serveur local, et celui-ci n’a pas
+d’état externe (pas de fichier de cookies par exemple) donc il est possible de
+lancer plusieurs serveurs locaux en même temps.
+
 Tout le code Go précédemment décrit est exposé sous la forme d’une
 bibliothèque, utilisée par le programme `antroid.go` situé à la racine du
 répertoire. Celui-ci permet de lancer un serveur de jeu et d’utiliser tous les
