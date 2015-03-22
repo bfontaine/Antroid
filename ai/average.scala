@@ -1,8 +1,11 @@
 /**
  * Ant holds all information we can have about an ant
  */ 
-class Ant (val id: Int)
+      // N lines: X Y (C)ontent (S)ee_now
+class Ant
 {
+  // id
+  var id: Int = 0
   // position
   var x: Int = 0
   var y: Int = 0
@@ -12,6 +15,30 @@ class Ant (val id: Int)
   var energy: Int = 0
   var acid: Int = 0
   var brain: Int = 0
+
+  def init (_id: Int, _x: Int, _y: Int, _dx: Int, _dy: Int, _e: Int, _a: Int, _b: Int) : Ant = 
+    {
+      id = _id
+      x = _x
+      y = _y
+      dx = _dx
+      dy = _dy
+      energy = _e
+      acid = _a
+      brain = _b
+      return this
+    }
+
+  def init (_x: Int, _y: Int, _dx: Int, _dy: Int, _b: Int) : Ant = 
+    {
+      x = _x
+      y = _y
+      dx = _dx
+      dy = _dy
+      brain = _b
+      return this
+    }
+
 }
 
 /**
@@ -33,6 +60,7 @@ case object Meat extends Tile
  */
 object GameInfo 
 {
+  // general game information
   private var _turnId: Int = 0
   def turnId = _turnId
   private var _antsPerPlayer: Int = 0
@@ -41,12 +69,26 @@ object GameInfo
   def nbPlayers = _nbPlayers
   private var _playing: Boolean = false
   def playing = _playing
+  // has the game initialised (all objects have already been created)
+  private var initialised = false
+
+  // player's ants
+  private var _myAnts : Array[Ant] = Array ()
+  def myAnts = _myAnts
+
+  // other ants we can see at this turn
+  private var _enemyAnts : List[Ant] = List()
+  // other ants we could see on previous turn
+  private var _oldEnemies : List[Ant] = List()
+
+  // map
 
   /*
    * Tries to read information on stdin in order to update state
    */ 
   def nextTurn () = 
     {
+      // Protocol: 
       // (T)urn_id (A)nts/player (P)layersNb (S)tatus
       // A lines for ants: ID X Y DX DY (E)nergy (A)cid (B)rain
       // (N)b_enemies
@@ -72,8 +114,19 @@ object GameInfo
   val header_pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-1]+)".r
   private def header (line: String) = 
     {
-      val header_pattern(_turnId, _antsPerPlayer, _nbPlayers, status) = line
-      _playing = if (status == "0") {false} else {true}
+      // (T)urn_id (A)nts/player (P)layersNb (S)tatus
+      val header_pattern(t, a, p, s) = line
+      _playing = if (s == "0") {false} else {true}
+      _turnId = t.toInt
+      if (! initialised) 
+	init (a.toInt, p.toInt)
+    }
+
+  private def init (ants: Int, players: Int) = 
+    {
+      _antsPerPlayer = ants
+      _nbPlayers = players
+      _myAnts = Array.fill(ants){new Ant}
     }
 
   private def ants (n: Int) = 
@@ -87,11 +140,18 @@ object GameInfo
   val ant_pattern = "([0-9]+) ([0-9]+) ([0-9]+) (-?[0-9]+) (-?[0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
   private def ant (line: String) = 
     {
+      // ID X Y DX DY (E)nergy (A)cid (B)rain
       val ant_pattern(id, x, y, dx, dy, e, a, b) = line
+      val ant = (new Ant).init(id.toInt, x.toInt, y.toInt, dx.toInt, dy.toInt, e.toInt, a.toInt, b.toInt)
+      _myAnts(id.toInt) = ant
     }
 
   private def opponentAnts () = 
     {
+      // flushing 
+      _oldEnemies = _enemyAnts
+      _enemyAnts = List()
+      // treatment
       val s = readLine()
       val n = s.toInt
       for (_ <- 0 until n) {
@@ -103,7 +163,10 @@ object GameInfo
   val opponent_pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
   private def opponentAnt (line: String) = 
     {
+      // X Y DX DY B
       val opponent_pattern(x, y, dx, dy, b) = line
+      val ant = (new Ant).init(x.toInt, y.toInt, dx.toInt, dy.toInt, b.toInt)
+      _enemyAnts = _enemyAnts :+ ant      
     }
 
   private def map () = 
@@ -120,6 +183,7 @@ object GameInfo
   val mapHeader_pattern = "([0-9]+) ([0-9]+) ([0-9]+)".r
   private def mapHeader (line: String) : Int = 
     {
+      // W H (N)b_points
       val mapHeader_pattern(w, h, n) = line
       return n.toInt
     }
@@ -127,6 +191,7 @@ object GameInfo
   private val mapTiles_pattern = "([0-9]+) ([0-9]+) ([0-9]+)".r
   private def mapTiles (line: String) = 
     {
+      // X Y (C)ontent (S)ee_now
       val mapTiles_pattern(x, y, c, s) = line
     }
 
