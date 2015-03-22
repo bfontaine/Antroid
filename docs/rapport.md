@@ -1,8 +1,7 @@
 # Projet PComp
 
-Auteurs : David Galichet, Julien Sagot, Nicolas Cailloux, et Baptiste Fontaine.
-
-Contraintes :
+Un projet par David Galichet, Julien Sagot, Nicolas Cailloux, et Baptiste
+Fontaine dont les contraintes étaient :
 
 * Utiliser Scheme
 * Utiliser un maximum de bibliothèques

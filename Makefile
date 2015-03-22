@@ -22,3 +22,15 @@ deps:
 
 clean:
 	$(RM) *~ $(COVERFILE)
+
+
+# Report
+
+REPORT = rapport.pdf
+REPORT_SOURCE = docs/rapport.md
+REPORT_TPL = docs/template.tex
+
+report: $(REPORT)
+
+$(REPORT): $(REPORT_SOURCE) $(REPORT_TPL)
+	pandoc --template $(REPORT_TPL) --latex-engine=xelatex $(REPORT_SOURCE) -o $@
