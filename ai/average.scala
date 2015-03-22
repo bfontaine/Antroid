@@ -41,6 +41,13 @@ class Ant
 
 }
 
+class Point (val x: Int, val y: Int)
+
+object Point 
+{
+  def fromCoord (x: Int, y: Int) = new Point(x,y)
+}
+
 /**
  * Tile is the enumeration of all possible field value, used in the map
  */
@@ -52,6 +59,21 @@ case object Sugar extends Tile
 case object Mill extends Tile
 case object Meat extends Tile
 
+object Tile 
+{
+  class UnknownTile extends Exception
+  def fromInt (i: Int) = i match {
+    case 0 => Grass;
+    case 1 => Sugar;
+    case 2 => Rock;
+    case 3 => Mill;
+    case 4 => Water;
+    case 5 => Meat;
+    case _ => throw new UnknownTile;
+  }
+}
+
+class VisibleTile (val tile: Tile, var visible: Boolean = false);
 
 /**
  * GameInfo holds and updates game information such as:
@@ -82,7 +104,9 @@ object GameInfo
   private var _oldEnemies : List[Ant] = List()
 
   // map
-  private var map : ArrayBuffer[]
+  private var _map : Map[Point, VisibleTile] = Map()
+  private var _width : Int = 0
+  private var _height : Int = 0
 
   /*
    * Tries to read information on stdin in order to update state
@@ -172,6 +196,11 @@ object GameInfo
 
   private def map () = 
     {
+      // resetting map visibility
+      for ((p,t) <- _map) {
+	t.visible = false
+      }
+      // parsing
       val line = nullexception(readLine())      
       val nTiles = mapHeader (line)
       for (i <- 0 until nTiles) 
@@ -186,6 +215,8 @@ object GameInfo
     {
       // W H (N)b_points
       val mapHeader_pattern(w, h, n) = line
+      _width = w.toInt
+      _height = h.toInt
       return n.toInt
     }
 
@@ -194,6 +225,13 @@ object GameInfo
     {
       // X Y (C)ontent (S)ee_now
       val mapTiles_pattern(x, y, c, s) = line
+      val point = Point.fromCoord(x.toInt, y.toInt)
+      val tile = _map.get(point)
+      tile match {
+	case Some(t) => t.visible = true; _map = _map + (point -> t);
+	case None => val t = new VisibleTile(Tile.fromInt(c.toInt),true);
+	_map = _map+(point -> t)
+      }
     }
 
   class BadServerPacket extends Exception
