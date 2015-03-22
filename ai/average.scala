@@ -19,12 +19,11 @@ class Ant (val id: Int)
  */
 sealed abstract class Tile
 case object Grass extends Tile
-case class Food extends Tile
 case object Rock extends Tile
 case object Water extends Tile
-case object Sugar extends Food
-case object Mill extends Food
-case object Meat extends Food
+case object Sugar extends Tile
+case object Mill extends Tile
+case object Meat extends Tile
 
 
 /**
@@ -34,10 +33,83 @@ case object Meat extends Food
  */
 object GameInfo 
 {
-  var turnId: Int = 0
-  var antsPerPlayer: Int = 0
-  var nbPlayers: Int = 0
-  var playing: Boolean = false
+  private var _turnId: Int = 0
+  def turnId = _turnId
+  private var _antsPerPlayer: Int = 0
+  def antsPerPlayer = _antsPerPlayer
+  private var _nbPlayers: Int = 0
+  def nbPlayers = _nbPlayers
+  private var _playing: Boolean = false
+  def playing = _playing
+
+  /*
+   * Tries to read information on stdin in order to update state
+   */ 
+  def nextTurn () = 
+    {
+      // (T)urn_id (A)nts/player (P)layersNb (S)tatus
+      // A lines for ants: ID X Y DX DY (E)nergy (A)cid (B)rain
+      // (N)b_enemies
+      // N lines for opponents' ants: X Y DX DY B
+      // Map: W H (N)b_points
+      // N lines: X Y (C)ontent (S)ee_now
+      var finished = false
+      var init = false
+      while (! finished) 
+      {
+	val line = readLine()
+	finished = (line == null)
+      }
+    }
+
+  private def header (line: String) = 
+    {
+      val pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-1]+)".r
+      val pattern(_turnId, _antsPerPlayer, _nbPlayers, status) = line
+      _playing = if (status == "0") {false} else {true}
+    }
+
+  private def ants (n: Int) = 
+    {
+      for (_ <- 1 to n) {
+	val line = readLine()
+	nullexception (line)
+	ant (line)
+      }
+    }
+
+  private def ant (line: String) = 
+    {
+      val pattern = "([0-9]+) ([0-9]+) ([0-9]+) (-?[0-9]+) (-?[0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
+      val pattern(id, x, y, dx, dy, e, a, b) = line
+    }
+
+  private def opponentAnts () = 
+    {
+      val s = readLine()
+      val n = s.toInt
+      for (_ <- 1 to n) {
+	val line = readLine()
+	nullexception (line)
+	opponentAnt (line)
+      }
+    }
+
+  private def opponentAnt (line: String) = 
+    {
+      val pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
+      val pattern(x, y, dx, dy, b) = line
+    }
+  
+
+  class BadServerPacket extends Exception
+
+  private def nullexception (line: String) = 
+    {
+      if (line == null)
+	throw new BadServerPacket
+    }
+
 }
 
 /**
@@ -60,23 +132,13 @@ class AIAgent
 {
   var state : AIState = Wait
 
-  def update = {
-    readInfo
-    act
-  }
-
-  def readInfo = {
-    // ID X Y DX DY Brain
-    val pattern = "[0-9]+".r
-  }
-
-  def act = state match {
+  def act () = state match {
     case Wait => do_wait
-    case Explore => do_explore
-    case Retreat => do_retreat
-    case Battle => do_battle
-    case Unite(n) => do_unite(n)
-    case _ => println("Unknown state")
+      case Explore => do_explore
+	case Retreat => do_retreat
+	  case Battle => do_battle
+	    case Unite(n) => do_unite(n)
+	      case _ => println("Unknown state")
   }
 
   def changeState (s: AIState) = { state = s; this }
@@ -98,7 +160,7 @@ object Test {
   def main (args: Array[String]) = 
     {
       val ai = new AIAgent
-      ai.act
+      ai.act()
       ai.changeState(Retreat).act
     }
 
