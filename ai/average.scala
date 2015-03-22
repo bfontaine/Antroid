@@ -57,57 +57,92 @@ object GameInfo
       var init = false
       while (! finished) 
       {
-	val line = readLine()
-	finished = (line == null)
+	var line = nullexception(readLine())
+	// header
+	header (line)
+	// player's ants treatment
+	ants (_antsPerPlayer)
+	// opponents' ants header + treatment
+	opponentAnts ()
+	// map header + treatment
+	map ()
       }
     }
 
+  val header_pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-1]+)".r
   private def header (line: String) = 
     {
-      val pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-1]+)".r
-      val pattern(_turnId, _antsPerPlayer, _nbPlayers, status) = line
+      val header_pattern(_turnId, _antsPerPlayer, _nbPlayers, status) = line
       _playing = if (status == "0") {false} else {true}
     }
 
   private def ants (n: Int) = 
     {
-      for (_ <- 1 to n) {
-	val line = readLine()
-	nullexception (line)
+      for (_ <- 0 until n) {
+	val line = nullexception(readLine())
 	ant (line)
       }
     }
-
+  
+  val ant_pattern = "([0-9]+) ([0-9]+) ([0-9]+) (-?[0-9]+) (-?[0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
   private def ant (line: String) = 
     {
-      val pattern = "([0-9]+) ([0-9]+) ([0-9]+) (-?[0-9]+) (-?[0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
-      val pattern(id, x, y, dx, dy, e, a, b) = line
+      val ant_pattern(id, x, y, dx, dy, e, a, b) = line
     }
 
   private def opponentAnts () = 
     {
       val s = readLine()
       val n = s.toInt
-      for (_ <- 1 to n) {
-	val line = readLine()
-	nullexception (line)
+      for (_ <- 0 until n) {
+	val line = nullexception(readLine())
 	opponentAnt (line)
       }
     }
 
+  val opponent_pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
   private def opponentAnt (line: String) = 
     {
-      val pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)".r
-      val pattern(x, y, dx, dy, b) = line
+      val opponent_pattern(x, y, dx, dy, b) = line
     }
-  
+
+  private def map () = 
+    {
+      val line = nullexception(readLine())      
+      val nTiles = mapHeader (line)
+      for (i <- 0 until nTiles) 
+	{
+	  val line = nullexception(readLine())
+	  mapTiles (line)
+	}
+    }
+
+  val mapHeader_pattern = "([0-9]+) ([0-9]+) ([0-9]+)".r
+  private def mapHeader (line: String) : Int = 
+    {
+      val mapHeader_pattern(w, h, n) = line
+      return n.toInt
+    }
+
+  private val mapTiles_pattern = "([0-9]+) ([0-9]+) ([0-9]+)".r
+  private def mapTiles (line: String) = 
+    {
+      val mapTiles_pattern(x, y, c, s) = line
+    }
 
   class BadServerPacket extends Exception
 
-  private def nullexception (line: String) = 
+  /**
+   * checks if [line] is null (it would mean that reading stdin results in EOF
+   * while it shouldn't).
+   * It returns the same string to be fluent. 
+   */ 
+  private def nullexception (line: String) : String = 
     {
       if (line == null)
 	throw new BadServerPacket
+      else 
+	return line
     }
 
 }
