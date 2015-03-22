@@ -120,20 +120,16 @@ object GameInfo
       // N lines for opponents' ants: X Y DX DY B
       // Map: W H (N)b_points
       // N lines: X Y (C)ontent (S)ee_now
-      var finished = false
       var init = false
-      while (! finished) 
-      {
-	var line = nullexception(readLine())
-	// header
-	header (line)
-	// player's ants treatment
-	ants (_antsPerPlayer)
-	// opponents' ants header + treatment
-	opponentAnts ()
-	// map header + treatment
-	map ()
-      }
+      var line = nullexception(readLine())
+      // header
+      header (line)
+      // player's ants treatment
+      ants (_antsPerPlayer)
+      // opponents' ants header + treatment
+      opponentAnts ()
+      // map header + treatment
+      map ()
     }
 
   val header_pattern = "([0-9]+) ([0-9]+) ([0-9]+) ([0-1]+)".r
@@ -267,7 +263,7 @@ case object Battle extends AIState
 // the Ant should reach the ally given as parameter
 case class Unite (lead: Int) extends AIState
 
-class AIAgent
+class AIAgent (val id: Int)
 {
   var state : AIState = Wait
 
@@ -294,13 +290,58 @@ class AIAgent
 
 }
 
-object Test {
+object Client 
+{
 
-  def main (args: Array[String]) = 
+  var agents : Array[AIAgent] = Array()
+  var play_function = play_init
+
+  def play () = 
     {
-      val ai = new AIAgent
-      ai.act()
-      ai.changeState(Retreat).act
+      var finished: Boolean = false
+      while (! finished) 
+      {
+	play_function
+	finished = (GameInfo.playing == false)
+      }
     }
 
+  def init () = 
+    {
+      
+    }
+
+  def play_turn () : Unit = 
+    {
+      // reading game state
+      GameInfo.nextTurn ()
+      // computing commands and printing them
+      printf(getCommands())
+    }
+
+  def play_init () : Unit = 
+    {
+      // reading game state
+      GameInfo.nextTurn ()
+      // creating AIAgents if they weren't here
+      Array.tabulate(GameInfo.antsPerPlayer)(n => new AIAgent(n))
+      // computing commands and printing them
+      printf(getCommands())
+      // changing looping method
+      play_function = play_turn
+    }
+
+  def getCommands () : String = 
+    {
+      val n = agents.size - 1
+      val cmd = for (i <- 0 to n) yield "$i:rest,"
+      return cmd+"$n:rest"
+    }
+
+  def main (args: Array[String]) 
+  {
+    getCommands()
+  }
+
 }
+
