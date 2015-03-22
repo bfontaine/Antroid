@@ -15,6 +15,15 @@ type BasicAntStatus struct {
 	Brain string
 }
 
+// Eq tests if this status is equal to another
+func (as BasicAntStatus) Eq(other BasicAntStatus) bool {
+	return as.Pos.X == other.Pos.X &&
+		as.Pos.Y == other.Pos.Y &&
+		as.Dir.X == other.Dir.X &&
+		as.Dir.Y == other.Dir.Y &&
+		as.Brain == other.Brain
+}
+
 // AntStatus describes an ant
 type AntStatus struct {
 	// it inherits all fields from BasicAntStatus

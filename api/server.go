@@ -275,11 +275,12 @@ func (p *Player) sendTurnStatusToPlugins() {
 		))
 	}
 
+Visible:
 	// construct enemyAnts as all visible ants minus our ones
 	for _, visible := range visibleAnts {
 		for _, ant := range p.turn.AntsStatuses {
-			if visible == ant.BasicAntStatus {
-				continue
+			if visible.Eq(ant.BasicAntStatus) {
+				continue Visible
 			}
 		}
 		enemyAnts = append(enemyAnts, visible)
