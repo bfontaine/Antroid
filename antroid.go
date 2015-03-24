@@ -47,18 +47,21 @@ func gameServer(login, password string, ais []string, listeners []string,
 		return
 	}
 
+	var err error
+
+	done := p.Done()
+
 	// game loop
-	for {
-		if done, err := p.PlayTurn(); err != nil {
+	for !done {
+		if done, err = p.PlayTurn(); err != nil {
 			fmt.Printf("%s\n", err)
-			return
-		} else if done {
-			fmt.Println("End of game.")
-			fmt.Println("Scores:")
-			p.PrintScores()
 			return
 		}
 	}
+
+	fmt.Println("End of game.")
+	fmt.Println("Scores:")
+	p.PrintScores()
 }
 
 var (
