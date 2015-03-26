@@ -79,3 +79,25 @@ l’organisation du code. Tout, à l’exception de ce rapport, est écrit en
 anglais. L’ensemble du code se veut clair et respecte les conventions du
 langage dans lequel il est écrit. Il est découpé en plusieurs fichiers, chacun
 ne contenant du code que pour une partie distincte.
+
+## Programmes supplémentaires
+
+Le projet comprend trois intelligences artificielles minimales dans `ai/` :
+
+- `scout.scm`, en Scheme, qui contrôle une fourmi qui explore la carte en
+  évitant de retourner sur des cases déjà explorées
+- `ant.rb`, en Ruby, qui contrôle un donné de fourmis qui vont toutes tout
+  droit
+- `randombot.sh`, en Bash, qui contrôle une fourmi qui fait des actions
+  aléatoires
+
+Nous disposons également de deux interfaces graphiques dans `gui/`, une en
+OCaml (`monitor.ml`) et une expérimentale en Python (`mapgui.py`).
+
+L’IA est donnée en argument lors du lancement du serveur de jeu local, et il
+est possible d’utiliser une interface graphique en option :
+
+    $ ./antroid server --gui gui/a.out ai/ant.rb
+
+Pour plus d’informations sur les options possibles de `./antroid`, lancez le
+programme sans arguments.
