@@ -62,7 +62,7 @@ Concernant le code :
   parler de type en PHP) et provoquera une erreur à l’exécution. Un autre
   exemple est cette ligne dans `BIblio.php` :
 
-    curl_setopt($curl, CURLOPT_URL, $url.http_build_query($url));
+        curl_setopt($curl, CURLOPT_URL, $url.http_build_query($url));
 
   Ici, `$url` est le tableau associatif qui correspond aux paramètres de
   l’appel. Outre le nommage qui ne correspond pas à ce qu’est la variable, on
@@ -74,11 +74,17 @@ Concernant le code :
   affichent une erreur et retournent `null`.
 * Beaucoup de code est répété, notamment dans `BIblio.php`, il aurait pu être
   factorisé.
+* La bibliothèque expose complètement l’API, donc si l’API proposée par le
+  serveur distant change, tout le code devra être modifié, pas seulement le
+  fichier `BIblio.php`.
+* Certaines valeurs devraient être définies dans des constantes au nom
+  évoquateur, comme le mystérieux `-15` de la ligne 71 de `start.php`, qui ne
+  parle pas au lecteur qui n’a pas déjà lu le rapport.
 
 ## Exécution
 
 Un avantage non-négligeable aurait été de pouvoir fournir la configuration en
-ligne de commande, en plus de la possibilité de passer un fichier.
+ligne de commande, en plus de la possibilité d’utiliser un fichier.
 
 ### Correction
 
